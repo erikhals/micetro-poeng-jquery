@@ -26,7 +26,7 @@
     //Log in
     firebase.auth().signInWithEmailAndPassword(email, password)
     .then(function(user){
-        window.location = 'index.html#mainMenu';
+      window.location = 'index.html#mainMenu';
 
     })
     .catch(function(error) {
@@ -168,10 +168,10 @@
     return false;
   });
 
-  //Enable button 13 if player 13 has a name
   $('#scenePage').on("create", e => {
     var ref = firebase.database().ref('shows/show/players/player-data');
     ref.once("value").then(snapshot => {
+      //Enable button 13 if player 13 has a name
       if(snapshot.child("13").child("name").val() == null){
         $("#knapp13").hide();
       }else{
@@ -360,7 +360,7 @@
       var foundOne = snap.forEach(snapshot => {
         if (snapshot.val() === true) {
           window.location = '#showMenu';
-          return true; // found one, cancel enumeration  
+          return true; // found one, cancel enumeration
         }
       });
       if (!foundOne) {
