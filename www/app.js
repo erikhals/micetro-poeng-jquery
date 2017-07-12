@@ -17,6 +17,10 @@
   const csRef = firebase.database().ref("shows/show/currentScene");
   var currentScene;
 
+  // CurrentRound variable
+  const crRef = firebase.database().ref("shows/show/currentRound");
+  var currentRound;
+
   //Add login event
   btnLogIn.addEventListener('click', e => {
     //Get email and password
@@ -57,6 +61,11 @@
     console.log(currentScene);
   });
 
+  crRef.on('value', crsnap => {
+    currentRound = crsnap.val();
+    console.log(currentRound);
+  });
+
   var cPlayRef = firebase.database().ref("shows/show/players/player-list")
   var currentPlayers;
   var currentActive;
@@ -69,10 +78,6 @@
       };
     });
   });
-
-  // CurrentRound variable
-  var crRef = firebase.database().ref("shows/show/currentRound");
-  var currentRound;
 
   // Log out button
   $(".logOut").click( function() {
@@ -88,9 +93,6 @@
   //hide elimination button
   $('#showMenu').on("pagebeforeshow", e => {
     $('#btnElimination').closest('.ui-btn').hide();
-    crRef.once('value', crsnap => {
-      currentRound = crsnap.val();
-    });
     cPlayRef.once('value', psnap => {
       currentPlayers = psnap.numChildren();
       currentActive = 0;
@@ -155,11 +157,12 @@
         ref.child("player-list").child(playeri).remove();
         ref.child("player-data/" + playeri + "/active").remove();
         $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", true );
+        $('#checkbox'+i).closest('div').addClass('mobile-checkboxradio-disabled');
       }else if(currentScene == 1){
         ref.child("player-data").child(playeri).child("name").set(playerSend);
         ref.child("player-list").child(playeri).set(true);
         ref.child("player-data").child(playeri).child("active").set(true);
-        $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", false );
+        $('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
       }else{
         ref.child("player-data").child(playeri).child("name").set(playerSend);
       };
@@ -179,11 +182,13 @@
       }
       for (i=1; i<14; i++) {
         $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", true );
+        $('#checkbox'+i).closest('div').addClass('mobile-checkboxradio-disabled');
       };
       snapshot.forEach(childSnap => {
         var childval = childSnap.child("active").val();
         if (childval == true){
           $('#checkbox'+childSnap.key).checkboxradio().checkboxradio( "option", "disabled", false );
+          $('#checkbox'+childSnap.key).closest("div").removeClass('mobile-checkboxradio-disabled');
         }
       });
       for (i=1; i<14; i++) {
@@ -267,7 +272,7 @@
     ref.child("currentRound").set(1);
     for (var i=1;i<14;i++){
       $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", false );
-      $('#elcheckbox'+i).checkboxradio().checkboxradio( "option", "disabled", false );
+      $('#checkbox'+i).closest("div").removeClass('mobile-checkboxradio-disabled');
     };
 
     $('#playerInput')[0].reset();
@@ -312,8 +317,8 @@
     var ref = firebase.database().ref("shows/show");
     ref.remove();
     for (var i=1;i<14;i++){
-      $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", false );
-      $('#elcheckbox'+i).checkboxradio().checkboxradio( "option", "disabled", false );
+      $('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
+      $('#elcheckbox'+i).closest("div").removeClass('ui-state-disabled');
     };
     $('#playerInput')[0].reset();
     $('#btnElimination').closest("ui-btn").hide();
@@ -354,6 +359,7 @@
         playerListRef.child(curPlayr).set(false);
         playerScoreRef.child(curPlayr).child("active").set(false);
         $('#'+curCheck).checkboxradio().checkboxradio( "option", "disabled", true );
+        $('#'+curCheck).closest('div').addClass('mobile-checkboxradio-disabled');
       };
     }
     playerListRef.once('value', snap => {
@@ -401,6 +407,7 @@
         playerListRef.child(cPlayr).remove();
         playerDataRef.child(i).child("active").remove();
         $('#'+cCheck).checkboxradio().checkboxradio( "option", "disabled", true );
+        $('#'+cCheck).closest('div').addClass('mobile-checkboxradio-disabled');
       };
     };
     //enable all other player checkboxes
@@ -409,7 +416,8 @@
         var key = playerSnapshot.key;
         playerListRef.child(key).set(true);
         playerDataRef.child(key).child("active").set(true);
-        $('#checkbox'+key).checkboxradio().checkboxradio( "option", "disabled", false );
+        $('#checkbox'+key).checkboxradio().checkboxradio("option", "disabled", false);
+        $('#checkbox'+key).closest("div").removeClass('mobile-checkboxradio-disabled');
       });
       $('#btnElimination').closest("ui-btn").hide();
       if(snapshot.numChildren() >1){
@@ -431,7 +439,8 @@
         var key = playerSnapshot.key;
         playerListRef.child(key).set(true);
         playerDataRef.child(key).child("active").set(true);
-        $('#checkbox'+key).checkboxradio().checkboxradio( "option", "disabled", false );
+        $('#checkbox'+key).checkboxradio().checkboxradio("option", "disabled", false);
+        $('#checkbox'+key).closest("div").removeClass('mobile-checkboxradio-disabled');
       });
       $('#btnElimination').closest("ui-btn").hide();
       if(snapshot.numChildren() >1){
