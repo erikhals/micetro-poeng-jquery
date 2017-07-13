@@ -5,10 +5,10 @@
         <!--<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width"/> -->
         <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, maximum-scale=1.0, user-scalable=no" />;
         <title>Micetro poeng</title>
-        <link rel="stylesheet" href="jquery.mobile-1.4.5.min.css" /> <!--http://code.jquery.com/mobile/1.4.5/ -->
-        <script src="jquery-1.11.1.min.js"></script> <!-- http://code.jquery.com/ -->
-        <script src="jquery.mobile-1.4.5.min.js"></script> <!--http://code.jquery.com/mobile/1.4.5/-->
-        <script src="firebase.js"></script> <!--https://www.gstatic.com/firebasejs/4.1.3/-->
+        <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" /> <!--http://code.jquery.com/mobile/1.4.5/ -->
+        <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script> <!-- http://code.jquery.com/ -->
+        <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script> <!--http://code.jquery.com/mobile/1.4.5/-->
+        <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script> <!--https://www.gstatic.com/firebasejs/4.1.3/-->
         <style>
           #footer{
             position: absolute;
@@ -54,8 +54,8 @@
             <h1>Micetro Poeng</h1>
           </div> <!-- header -->
           <div data-role="main" class="ui-content">
-            <label for="passWd">Passord</label>
-            <input id="passWd" type="password"></input>
+            <label for="userPassword">Passord</label>
+            <input id="userPassword" type="password"></input>
             <button id="btnLogIn" class="btn btn-action">Logg inn</button>
           </div> <!-- main -->
           <div data-role="footer" id="footer">
@@ -177,7 +177,8 @@
                 <button type="submit">Lagre</button>
                 <button type="reset">Reset</button>
               </form>
-              <button id="btnLogOut2" class="logOut">Logg ut</button>
+              <button id="btnNamesCancel">Cancel</button>
+              
               <div class="ui-bar">
               </div>
 

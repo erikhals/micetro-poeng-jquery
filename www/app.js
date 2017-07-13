@@ -8,11 +8,27 @@
     messagingSenderId: "38039570025"
   };
 
+  //Disable and enable checkboxes
+  jQuery.fn.extend({
+    enableCheckbox: function() {
+      return this.each(function() {
+        $(this).checkboxradio().checkboxradio( "option", "disabled", false );
+        $(this).closest('div').removeClass('mobile-checkboxradio-disabled');
+      });
+    },
+    disableCheckbox: function() {
+      return this.each(function() {
+        $(this).checkboxradio().checkboxradio( "option", "disabled", true );
+        $(this).closest('div').addClass('mobile-checkboxradio-disabled');
+      });
+    }
+  });
+
   firebase.initializeApp(config);
 
   //get elements
-  const passWd = document.getElementById('passWd');
-  const btnLogIn = document.getElementById('btnLogIn');
+  const passWd = $('#userPassword');
+  const btnLogIn = $('#btnLogIn');
 
   const csRef = firebase.database().ref("shows/show/currentScene");
   var currentScene;
@@ -22,10 +38,10 @@
   var currentRound;
 
   //Add login event
-  btnLogIn.addEventListener('click', e => {
+  btnLogIn.on('click', e => {
     //Get email and password
     const email = "erikhals@gmail.com";
-    const password = passWd.value;
+    const password = passWd.val();
     const auth = firebase.auth();
     //Log in
     firebase.auth().signInWithEmailAndPassword(email, password)
@@ -47,7 +63,6 @@
   firebase.auth().onAuthStateChanged(firebaseUser => {
     if(firebaseUser){
       console.log(firebaseUser);
-
     }
     else{
       console.log('not logged in');
@@ -142,7 +157,6 @@
     window.location = '#showMenu';
   });
 
-
   // Set player names
   $('#playerInput').submit(event => {
     var $form = $(this);
@@ -156,13 +170,12 @@
       if(!playerSend && currentScene == 1){
         ref.child("player-list").child(playeri).remove();
         ref.child("player-data/" + playeri + "/active").remove();
-        $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", true );
-        $('#checkbox'+i).closest('div').addClass('mobile-checkboxradio-disabled');
+        $('#checkbox'+i).disableCheckbox();
       }else if(currentScene == 1){
         ref.child("player-data").child(playeri).child("name").set(playerSend);
         ref.child("player-list").child(playeri).set(true);
         ref.child("player-data").child(playeri).child("active").set(true);
-        $('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
+        $('#checkbox'+i).enableCheckbox();
       }else{
         ref.child("player-data").child(playeri).child("name").set(playerSend);
       };
@@ -181,14 +194,12 @@
         $("#knapp13").show();
       }
       for (i=1; i<14; i++) {
-        $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", true );
-        $('#checkbox'+i).closest('div').addClass('mobile-checkboxradio-disabled');
+        $('#checkbox'+i).disableCheckbox();
       };
       snapshot.forEach(childSnap => {
         var childval = childSnap.child("active").val();
         if (childval == true){
-          $('#checkbox'+childSnap.key).checkboxradio().checkboxradio( "option", "disabled", false );
-          $('#checkbox'+childSnap.key).closest("div").removeClass('mobile-checkboxradio-disabled');
+          $('#checkbox'+childSnap.key).enableCheckbox();
         }
       });
       for (i=1; i<14; i++) {
@@ -224,7 +235,6 @@
       });
       fset = '<fieldset data-role="controlgroup" id="playerlist">'
       for(var i=0; i<feed.length; i++){
-        //allItems += '<li data-rowid="' + feed[i].number + '" data-icon="delete"><a href="#">' + feed[i].number +'. ' + feed[i].name + '<p class="ui-li-aside"> <strong>'+feed[i].points+' poeng</strong></p></a></li>';
         allItems += '<input type="checkbox" name="elcheckbox'+feed[i].number+'" id="elcheckbox'+feed[i].number+'"><label for="elcheckbox'+feed[i].number+'">Spiller '+feed[i].number+' - '+feed[i].name+'<span style="float:right">'+feed[i].points+'p</span></label>';
       };
       $("#playerlist").html(fset+allItems+'</fieldset>');
@@ -271,8 +281,7 @@
     ref.child("currentScene").set(1);
     ref.child("currentRound").set(1);
     for (var i=1;i<14;i++){
-      $('#checkbox'+i).checkboxradio().checkboxradio( "option", "disabled", false );
-      $('#checkbox'+i).closest("div").removeClass('mobile-checkboxradio-disabled');
+      $('#checkbox'+i).enableCheckbox();
     };
 
     $('#playerInput')[0].reset();
@@ -317,8 +326,9 @@
     var ref = firebase.database().ref("shows/show");
     ref.remove();
     for (var i=1;i<14;i++){
-      $('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
-      $('#elcheckbox'+i).closest("div").removeClass('ui-state-disabled');
+      $('#checkbox'+i).enableCheckbox();
+      //$('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
+
     };
     $('#playerInput')[0].reset();
     $('#btnElimination').closest("ui-btn").hide();
@@ -358,8 +368,7 @@
         });
         playerListRef.child(curPlayr).set(false);
         playerScoreRef.child(curPlayr).child("active").set(false);
-        $('#'+curCheck).checkboxradio().checkboxradio( "option", "disabled", true );
-        $('#'+curCheck).closest('div').addClass('mobile-checkboxradio-disabled');
+        $('#'+curCheck).disableCheckbox();
       };
     }
     playerListRef.once('value', snap => {
@@ -406,8 +415,7 @@
       {
         playerListRef.child(cPlayr).remove();
         playerDataRef.child(i).child("active").remove();
-        $('#'+cCheck).checkboxradio().checkboxradio( "option", "disabled", true );
-        $('#'+cCheck).closest('div').addClass('mobile-checkboxradio-disabled');
+        $('#'+cCheck).disableCheckbox();
       };
     };
     //enable all other player checkboxes
@@ -416,8 +424,7 @@
         var key = playerSnapshot.key;
         playerListRef.child(key).set(true);
         playerDataRef.child(key).child("active").set(true);
-        $('#checkbox'+key).checkboxradio().checkboxradio("option", "disabled", false);
-        $('#checkbox'+key).closest("div").removeClass('mobile-checkboxradio-disabled');
+        $('#checkbox'+key).enableCheckbox();
       });
       $('#btnElimination').closest("ui-btn").hide();
       if(snapshot.numChildren() >1){
@@ -439,8 +446,7 @@
         var key = playerSnapshot.key;
         playerListRef.child(key).set(true);
         playerDataRef.child(key).child("active").set(true);
-        $('#checkbox'+key).checkboxradio().checkboxradio("option", "disabled", false);
-        $('#checkbox'+key).closest("div").removeClass('mobile-checkboxradio-disabled');
+        $('#checkbox'+key).enableCheckbox();
       });
       $('#btnElimination').closest("ui-btn").hide();
       if(snapshot.numChildren() >1){
@@ -459,6 +465,11 @@
 
   $("#btnEditCancel").on('click', event => {
     window.location = '#showMenu' ;
+  });
+
+  $("#btnNamesCancel").on('click', event => {
+    parent.history.back();
+    return false;
   });
 
   $("#btnScoreCancel").on('click', event => {
