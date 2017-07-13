@@ -37,8 +37,6 @@
   const crRef = firebase.database().ref("shows/show/currentRound");
   var currentRound;
 
-  var winner;
-
   //Add login event
   btnLogIn.on('click', e => {
     //Get email and password
@@ -94,22 +92,6 @@
     });
   });
 
-  function showHeaderUpdate() {
-    if (currentActive == 0 && currentPlayers > 1){
-      $('#btnElimination').closest('.ui-btn').show();
-      $('#btnNewScene').closest('.ui-btn').hide();
-      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
-    }else if(currentPlayers == 1){
-      $('#btnNewScene').closest('.ui-btn').hide();
-      $('#btnElimination').closest('.ui-btn').hide();
-      $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
-    }else{
-      $('#btnElimination').closest('.ui-btn').hide();
-      $('#btnNewScene').closest('.ui-btn').show();
-      $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
-    }
-  }
-
   // Log out button
   $(".logOut").click( function() {
     firebase.auth().signOut().then(e => {
@@ -126,14 +108,26 @@
     cPlayRef.once('value', psnap => {
       currentPlayers = psnap.numChildren();
       currentActive = 0;
-
+      var winner;
       psnap.forEach(snapchild => {
         if (snapchild.val()==true){
           currentActive++;
           winner = snapchild.key;
         };
       });
-      showHeaderUpdate();
+      if (currentActive == 0 && currentPlayers > 1){
+        $('#btnElimination').closest('.ui-btn').show();
+        $('#btnNewScene').closest('.ui-btn').hide();
+        $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
+      }else if(currentPlayers == 1){
+        $('#btnNewScene').closest('.ui-btn').hide();
+        $('#btnElimination').closest('.ui-btn').hide();
+        $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
+      }else{
+        $('#btnElimination').closest('.ui-btn').hide();
+        $('#btnNewScene').closest('.ui-btn').show();
+        $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
+      }
     });
 
   });
@@ -469,8 +463,6 @@
   });
 
   $("#btnNamesCancel").on('click', event => {
-    var ref = firebase.database().ref("shows/show");
-    ref.remove();
     parent.history.back();
     return false;
   });
