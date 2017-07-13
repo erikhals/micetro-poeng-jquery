@@ -103,12 +103,17 @@
     });
   });
 
+  $('#showMenu').on("pageshow", e => {
+    //$.mobile.loading( "show" );
+  });
+
   $('#showMenu').on("pagebeforeshow", e => {
     $('#btnElimination').closest('.ui-btn').hide();
     cPlayRef.once('value', psnap => {
       currentPlayers = psnap.numChildren();
       currentActive = 0;
       var winner;
+      //$.mobile.loading( "hide" );
       psnap.forEach(snapchild => {
         if (snapchild.val()==true){
           currentActive++;
@@ -129,16 +134,16 @@
         $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
       }
     });
-
   });
 
   $('#mainMenu').on("pagebeforeshow", () => {
+    $.mobile.loading( "show" );
     csRef.once('value', csnap => {
       currentScene = csnap.val();
     }).then(()=>{
       $("#btnContinue").closest('.ui-btn').hide();
       $("#btnNewShow").closest('.ui-btn').hide();
-
+      $.mobile.loading( "hide" );
       if(currentScene == null){
         $("#btnContinue").closest('.ui-btn').hide();
         $("#btnNewShow").closest('.ui-btn').show();
@@ -147,7 +152,6 @@
         $("#btnNewShow").closest('.ui-btn').show();
       }
     });
-
   });
 
   $('#btnContinue').on('click', e => {
