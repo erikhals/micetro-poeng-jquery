@@ -37,6 +37,8 @@
   const crRef = firebase.database().ref("shows/show/currentRound");
   var currentRound;
 
+  var winner;
+
   //Add login event
   btnLogIn.on('click', e => {
     //Get email and password
@@ -70,17 +72,15 @@
     }
   });
 
-  // CurrentScene variable
+  // Global Variables
   csRef.on('value', csnap => {
     currentScene = csnap.val();
     console.log(currentScene);
   });
-
   crRef.on('value', crsnap => {
     currentRound = crsnap.val();
     console.log(currentRound);
   });
-
   var cPlayRef = firebase.database().ref("shows/show/players/player-list")
   var currentPlayers;
   var currentActive;
@@ -94,6 +94,22 @@
     });
   });
 
+  function showHeaderUpdate() {
+    if (currentActive == 0 && currentPlayers > 1){
+      $('#btnElimination').closest('.ui-btn').show();
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
+    }else if(currentPlayers == 1){
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $('#btnElimination').closest('.ui-btn').hide();
+      $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
+    }else{
+      $('#btnElimination').closest('.ui-btn').hide();
+      $('#btnNewScene').closest('.ui-btn').show();
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
+    }
+  }
+
   // Log out button
   $(".logOut").click( function() {
     firebase.auth().signOut().then(e => {
@@ -105,32 +121,19 @@
     });
   });
 
-  //hide elimination button
   $('#showMenu').on("pagebeforeshow", e => {
     $('#btnElimination').closest('.ui-btn').hide();
     cPlayRef.once('value', psnap => {
       currentPlayers = psnap.numChildren();
       currentActive = 0;
-      var winner;
+
       psnap.forEach(snapchild => {
         if (snapchild.val()==true){
           currentActive++;
           winner = snapchild.key;
         };
       });
-      if (currentActive == 0 && currentPlayers > 1){
-        $('#btnElimination').closest('.ui-btn').show();
-        $('#btnNewScene').closest('.ui-btn').hide();
-        $("#showInfo").html("<h3>Round "+currentRound+" - Scene "+currentScene+"</h3>");
-      }else if(currentPlayers == 1){
-        $('#btnNewScene').closest('.ui-btn').hide();
-        $('#btnElimination').closest('.ui-btn').hide();
-        $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
-      }else{
-        $('#btnElimination').closest('.ui-btn').hide();
-        $('#btnNewScene').closest('.ui-btn').show();
-        $("#showInfo").html("<h3>Round "+currentRound+" - Scene "+currentScene+"</h3>");
-      }
+      showHeaderUpdate();
     });
 
   });
@@ -157,7 +160,6 @@
     window.location = '#showMenu';
   });
 
-  // Set player names
   $('#playerInput').submit(event => {
     var $form = $(this);
     var players = "shows/show/players";
@@ -274,6 +276,21 @@
     $("#popupDialog").popup("open");
   });
 
+  $("#endShowYes").on('click', () => {
+    var ref = firebase.database().ref("shows/show");
+    ref.remove();
+    for (var i=1;i<14;i++){
+      $('#checkbox'+i).enableCheckbox();
+      //$('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
+
+    };
+    $('#playerInput')[0].reset();
+    $('#btnElimination').closest("ui-btn").hide();
+    $('#btnNewScene').closest("ui-btn").show();
+    $('#btnContinue').closest("ui-btn").hide();
+    window.location = '#mainMenu';
+  });
+
   $("#btnNewShow").on('click', e => {
     var ref = firebase.database().ref("shows/show");
     ref.remove();
@@ -319,21 +336,6 @@
       console.log("You clicked the " +rowid+" listitem");
     });
     window.location = '#sceneEditPage';
-  });
-
-  $("#endShowYes").on('click', () => {
-    var ref = firebase.database().ref("shows/show");
-    ref.remove();
-    for (var i=1;i<14;i++){
-      $('#checkbox'+i).enableCheckbox();
-      //$('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
-
-    };
-    $('#playerInput')[0].reset();
-    $('#btnElimination').closest("ui-btn").hide();
-    $('#btnNewScene').closest("ui-btn").show();
-    $('#btnContinue').closest("ui-btn").hide();
-    window.location = '#mainMenu';
   });
 
   $("#btnSceneSubmit").on('click', () => {
@@ -467,6 +469,8 @@
   });
 
   $("#btnNamesCancel").on('click', event => {
+    var ref = firebase.database().ref("shows/show");
+    ref.remove();
     parent.history.back();
     return false;
   });
