@@ -217,7 +217,6 @@
     window.location = '#scenePage';
   });
 
-
   $("#btnElimination").on('click', e => {
     const feedRef = firebase.database().ref('shows/show/players/player-data')
     var feed = [];
