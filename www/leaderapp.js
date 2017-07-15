@@ -15,37 +15,10 @@
   const btnLogIn = $('#btnLogIn');
 
   //Add login event
-  btnLogIn.on('click', e => {
-    //Get email and password
-    const email = "erikhals@gmail.com";
-    const password = passWd.val();
-    const auth = firebase.auth();
-    //Log in
-    firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(function(user){
-      window.location = 'leaderboard.html#board';
 
-    })
-    .catch(function(error) {
-
-      // Handle Errors here.
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      console.log(errorCode + errorMessage);
-      // ...
-    });
-  });
 
   //Add realtime listener
-  firebase.auth().onAuthStateChanged(firebaseUser => {
-    if(firebaseUser){
-      console.log(firebaseUser);
-    }
-    else{
-      console.log('not logged in');
-      window.location = 'leaderboard.html#page1';
-    }
-  });
+  
 
   var ref = firebase.database().ref("shows/show/currentScene");
 
