@@ -18,11 +18,11 @@
 
 
   //Add realtime listener
-  
+
 
   var ref = firebase.database().ref("shows/show/currentScene");
 
-  $('#board').on('pagecreate', e => {
+  $(document).ready( e => {
     ref.on('value', e => {
 
       const feedRef = firebase.database().ref('shows/show/players/player-data')
@@ -48,7 +48,7 @@
           allItems += '<li data-rowid="' + feed[i].number + '" ><span style="float:left">' + feed[i].number +'. ' + feed[i].name + '</span><span style="float:right">'+feed[i].points+' poeng</span></li>';
         };
         console.log("appending");
-        $("#scoresList").empty().append(allItems).listview().listview("refresh");
+        $("#scoresList").empty().append(allItems);
       });
     });
   });
