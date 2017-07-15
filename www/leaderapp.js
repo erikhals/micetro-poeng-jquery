@@ -22,7 +22,7 @@
 		}
 	}
 
-  function descending(a, b) { return a.points < b.points ? 1 : -1; }
+  function descending(a, b) { return parseFloat(a.points) < parseFloat(b.points) ? 1 : -1; }
 
   function reposition() {
     console.log("repositioning");
@@ -37,6 +37,7 @@
   function updateBoard() {
     console.log("updating board");
     players.sort(descending);
+    console.log(players);
 		updateRanks(players);
 		reposition();
 		}
@@ -66,7 +67,7 @@
         var $item = $(
           "<li class='player'>" +
           "<div class='rank'>" + (i + 1) + "</div>" +
-          "<div class='name'>" + players[i].name + "</div>" +
+          "<div class='name'>" + players[i].number +". "+players[i].name + "</div>" +
           "<div class='points'>" + players[i].points + "</div>" +
           "</li>");
           players[i].$item = $item;
@@ -76,12 +77,16 @@
     });
 
     ref.on('value', snapshot => {
-      feedRef.orderByKey().once('value', (snap, error) => {
+      feedRef.orderByChild('points').once('value', (snap, error) => {
         snap.forEach(plSnap => {
           var pdata = plSnap.val()
-          var index = players.map((o) => o.name).indexOf(pdata.name);
+          var index = players.map((o) => o.number).indexOf(+plSnap.key);
           var player = players[index];
-          player.points = pdata['points'];
+          if (pdata['points'] > 0){
+            player.points = pdata['points'];
+          }else{
+            player.points = 0;
+          }
           player.$item.find(".points").text(player.points);
         });
         updateBoard();
