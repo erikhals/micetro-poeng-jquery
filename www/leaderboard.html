@@ -8,25 +8,71 @@
         <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script> <!-- http://code.jquery.com/ -->
         <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script> <!--https://www.gstatic.com/firebasejs/4.1.3/-->
 
-        <style>
-
+        <style type="text/css">
+        #leaderboard li {
+      		font-family: sans-serif;
+      		font-size: 12px;
+      		line-height: 12px;
+      	}
+      	#leaderboard #players li {
+      		display:block;
+      		clear: both;
+      		position: absolute;
+      		width: 350px;
+      		-moz-transition-duration: 1s;
+      		-webkit-transition-duration: 1s;
+      		-ms-transition-duration: 1s;
+      	}
+      	#leaderboard #players li.header {
+      		font-weight: bold;
+      		background-color: silver;
+      		background: -moz-linear-gradient(top, #cedce7 0%, #596a72 100%);
+      		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cedce7), color-stop(100%,#596a72));
+      	}
+      	#leaderboard #players {
+      		padding: 0;
+      		width: 350px;
+      		position: relative;
+      		border: 1px solid #333;
+      		box-shadow: 2px 2px 5px gray;
+      		height: 132px;
+      		background: -moz-linear-gradient(top, #cedce7 0%, #596a72 100%);
+      		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cedce7), color-stop(100%,#596a72));
+      	}
+      	#leaderboard #players div {
+      		display: block;
+      		float: left;
+      		overflow: hidden;
+      		padding: 5px;
+      	}
+      	#leaderboard .player {
+      		background: -moz-linear-gradient(top, #feffff 0%, #e0dace 100%);
+      		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#feffff), color-stop(100%,#e0dace));
+      	}
+      	#leaderboard .rank {
+      		width: 50px;
+      	}
+      	#leaderboard .name {
+      		width: 150px;
+      	}
+      	#leaderboard .score {
+      		width: 100px;
+      	}
         </style>
 
     </head>
     <body>
 
+      <div id="leaderboard">
+      	<ul id="players">
+      		<li class="header">
+      			<div class="rank">Rank</div>
+      			<div class="name">Player</div>
+      			<div class="score">Score</div>
+      		</li>
+      	</ul>
+      </div>
 
-      <div data-role="page" id="board">
-        <div data-role="header">
-          <h1 id=scoreBoardHeader>Poengtavle</h1>
-        </div> <!-- header -->
-        <div data-role="main" class="ui-content">
-          <ul data-role="listview" id="scoresList">
-            <li>Test</li>
-          </ul>
-
-        </div> <!-- main -->
-      </div> <!-- page -->
 
       <script src="leaderapp.js"></script>
     </body>
