@@ -41,14 +41,11 @@
 		reposition();
 		}
 
-
   function updateRanks(players) {
 		for(var i = 0; i < players.length; i++) {
 			players[i].$item.find(".rank").text(i + 1);
 		}
 	}
-
-
 
   $(document).ready( e => {
 
@@ -70,7 +67,7 @@
           "<li class='player'>" +
           "<div class='rank'>" + (i + 1) + "</div>" +
           "<div class='name'>" + players[i].name + "</div>" +
-          "<div class='score'>" + players[i].points + "</div>" +
+          "<div class='points'>" + players[i].points + "</div>" +
           "</li>");
           players[i].$item = $item;
           $list.append($item);
