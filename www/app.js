@@ -137,13 +137,13 @@
   });
 
   $('#mainMenu').on("pagebeforeshow", () => {
-    $.mobile.loading( "show" );
+    //$.mobile.loading( "show" );
     csRef.once('value', csnap => {
       currentScene = csnap.val();
     }).then(()=>{
       $("#btnContinue").closest('.ui-btn').hide();
       $("#btnNewShow").closest('.ui-btn').hide();
-      $.mobile.loading( "hide" );
+      //$.mobile.loading( "hide" );
       if(currentScene == null){
         $("#btnContinue").closest('.ui-btn').hide();
         $("#btnNewShow").closest('.ui-btn').show();
@@ -440,6 +440,7 @@
   $("#btnPardon").on('click', event => {
     var playerListRef = firebase.database().ref('shows/show/players/player-list');
     var playerDataRef = firebase.database().ref('shows/show/players/player-data');
+    var cRoundRef = firebase.database().ref('shows/show/currentRound');
     playerListRef.once('value', function(snapshot){
       snapshot.forEach(function(playerSnapshot){
         var key = playerSnapshot.key;
@@ -454,6 +455,7 @@
         $('#btnNewScene').closest("ui-btn").hide();
         console.log("the show is over");
       }
+      cRoundRef.set(currentRound+1);
     window.location = '#showMenu' ;
     });
   });

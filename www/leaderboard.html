@@ -52,6 +52,9 @@
       		float: left;
       		padding: 10px 10px;
       	}
+        #leaderboard #players div .eliminated{
+          opacity: 0.6;
+        }
       	#leaderboard .player {
       		background: -moz-linear-gradient(top, #feffff 0%, #e0dace 100%);
       		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#feffff), color-stop(100%,#e0dace));
@@ -64,10 +67,17 @@
       	}
         #leaderboard #players .number {
       		width: 30px;
+          text-align: right;
       	}
         #leaderboard #players .name {
-      		width: 250px;
+      		width: 180px;
       	}
+        #leaderboard #players .changes {
+          font-family: 'Aldrich', sans-serif;
+          -moz-transition-duration: 10s;
+      		-webkit-transition-duration: 10s;
+      		-ms-transition-duration: 10s;
+        }
       	#leaderboard #players .points {
           font-family: 'Aldrich', sans-serif;
           padding: 10px 50px;
@@ -75,6 +85,12 @@
           text-align: center;
           float: right;
       	}
+        .notransition {
+          -webkit-transition: none !important;
+          -moz-transition: none !important;
+          -o-transition: none !important;
+          transition: none !important;
+        }
         </style>
 
     </head>
@@ -86,6 +102,7 @@
       			<div class="rank">Plass</div>
       			<div class="number">Spiller</div>
             <div class="name"></div>
+            <div class="changes"></div>
       			<div class="points">Poeng</div>
       		</li>
       	</ul>
