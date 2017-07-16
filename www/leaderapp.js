@@ -67,7 +67,8 @@
         var $item = $(
           "<li class='player'>" +
           "<div class='rank'>" + (i + 1) + "</div>" +
-          "<div class='name'>" + players[i].number +". "+players[i].name + "</div>" +
+          "<div class='number'>" + (players[i].number) + ". </div>" +
+          "<div class='name'>" + players[i].name + "</div>" +
           "<div class='points'>" + players[i].points + "</div>" +
           "</li>");
           players[i].$item = $item;

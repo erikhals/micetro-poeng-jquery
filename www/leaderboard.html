@@ -7,56 +7,73 @@
         <title>Micetro poeng</title>
         <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script> <!-- http://code.jquery.com/ -->
         <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script> <!--https://www.gstatic.com/firebasejs/4.1.3/-->
-
+        <link href="https://fonts.googleapis.com/css?family=Aldrich|Unkempt:700" rel="stylesheet">
         <style type="text/css">
+        body {
+          background-color: black;
+        }
+
         #leaderboard li {
-      		font-family: sans-serif;
-      		font-size: 12px;
-      		line-height: 12px;
+
+          font-family: 'Unkempt', cursive;
+      		font-size: 30px;
+      		line-height: 30px;
+          border-radius: 10px;
       	}
       	#leaderboard #players li {
       		display:block;
       		clear: both;
       		position: absolute;
-      		width: 350px;
+      		width: 100%;
       		-moz-transition-duration: 1s;
       		-webkit-transition-duration: 1s;
       		-ms-transition-duration: 1s;
       	}
       	#leaderboard #players li.header {
-      		font-weight: bold;
+          font-family: 'Aldrich', sans-serif;
+          font-weight: bold;
       		background-color: silver;
-      		background: -moz-linear-gradient(top, #cedce7 0%, #596a72 100%);
-      		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cedce7), color-stop(100%,#596a72));
+          background: -moz-linear-gradient(top, #fceabb 0%, #fccd4d 50%, #f8b500 51%, #fbdf93 100%); /* FF3.6-15 */
+          background: -webkit-linear-gradient(top, #fceabb 0%,#fccd4d 50%,#f8b500 51%,#fbdf93 100%); /* Chrome10-25,Safari5.1-6 */
       	}
       	#leaderboard #players {
-      		padding: 0;
-      		width: 350px;
+          padding: 0;
+          margin-left: auto;
+          margin-right: auto;
+      		width: 70%;
       		position: relative;
       		border: 1px solid #333;
       		box-shadow: 2px 2px 5px gray;
-      		height: 132px;
       		background: -moz-linear-gradient(top, #cedce7 0%, #596a72 100%);
       		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cedce7), color-stop(100%,#596a72));
       	}
       	#leaderboard #players div {
       		display: block;
       		float: left;
-      		overflow: hidden;
-      		padding: 5px;
+      		padding: 10px 10px;
       	}
       	#leaderboard .player {
       		background: -moz-linear-gradient(top, #feffff 0%, #e0dace 100%);
       		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#feffff), color-stop(100%,#e0dace));
       	}
-      	#leaderboard .rank {
-      		width: 50px;
+      	#leaderboard #players .rank {
+          font-family: 'Aldrich', sans-serif;
+          padding: 10px 50px;
+          text-align: center;
+          width: 75px;
       	}
-      	#leaderboard .name {
-      		width: 150px;
+        #leaderboard #players .number {
+      		width: 30px;
       	}
-      	#leaderboard .score {
-      		width: 100px;
+        #leaderboard #players .name {
+      		width: 250px;
+      	}
+      	#leaderboard #players .points {
+          font-family: 'Aldrich', sans-serif;
+          padding: 10px 50px;
+          width: 75px;
+          text-align: center;
+          float: right;
       	}
         </style>
 
@@ -66,9 +83,10 @@
       <div id="leaderboard">
       	<ul id="players">
       		<li class="header">
-      			<div class="rank">Rank</div>
-      			<div class="name">Player</div>
-      			<div class="points">Score</div>
+      			<div class="rank">Plass</div>
+      			<div class="number">Spiller</div>
+            <div class="name"></div>
+      			<div class="points">Poeng</div>
       		</li>
       	</ul>
       </div>
