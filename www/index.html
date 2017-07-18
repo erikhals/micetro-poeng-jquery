@@ -197,6 +197,7 @@
             <div id=showInfo><h3>Loading...</h3></div>
             <button id="btnNewScene" class="btn btn-action">Ny scene</button>
             <button id="btnElimination" class="btn btn-action">Eliminasjon</button>
+            <button id="btnUndo" class="btn btn-action ui-state-disabled">Angre siste</button>
             <button id="btnScores" class="btn btn-action">Poengtavle</button>
             <button id="btnEditScene" class="btn btn-action">Sceneliste</button>
             <button id="btnEndShow">Nullstill</button>
@@ -296,6 +297,13 @@
           <div data-role="footer" id="footer">
             Laget av Erik Hals
           </div> <!-- footer -->
+          <div data-role="popup" id="popupDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+            <div role="main" class="ui-content">
+            <h3 class="ui-title">Vil du slette denne scenen?</h3>
+             <a href="#" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Nei</a>
+             <a href="#" id="endShowYes" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b">Ja</a>
+            </div>
+          </div>
         </div> <!-- page -->
 
         <div data-role="page" id="eliminationPage" >

@@ -33,7 +33,7 @@
 
   function updateRanks(players) {
 		for(var i = 0; i < players.length; i++) {
-			players[i].$item.find(".rank").text(i + 1);
+			//players[i].$item.find(".rank").text(i + 1);
 		}
 	}
 
@@ -55,7 +55,7 @@
       for(var i = 0; i < players.length; i++) {
         var $item = $(
           "<li class='player'>" +
-          "<div class='rank'>" + (i + 1) + "</div>" +
+          //"<div class='rank'>" + (i + 1) + "</div>" +
           "<div class='number'>" + (players[i].number) + ". </div>" +
           "<div class='name'>" + players[i].name + "</div>" +
           "<div class='changes'></div>" +

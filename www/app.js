@@ -24,6 +24,15 @@
     }
   });
 
+  function refreshPage()
+  {
+    jQuery.mobile.changePage(window.location.href, {
+        allowSamePageTransition: true,
+        transition: 'none',
+        reloadPage: true
+    });
+  }
+
   firebase.initializeApp(config);
 
   //get elements
@@ -339,7 +348,9 @@
   $("#btnSceneSubmit").on('click', () => {
 
     //Get a json of players and set .players
-    var curSceneDB = "shows/show/scenes/scene" + currentScene;
+    var curSceneDB = "shows/show/scenes/" + currentScene;
+    var lastEventDB = firebase.database().ref("shows/show/lastEvent");
+    lastEventDB.remove();
 
     //Get points and set .points
     var radios = $('[name="radio-poeng"]');
@@ -349,10 +360,14 @@
       poeng = radios[i].value;
     }
     pointRef = firebase.database().ref(curSceneDB + '/points');
-    pointRef.set(poeng);
+    pointRef.set(+poeng);
+
+    lastEventDB.child("points").set(+poeng);
+    $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
 
     //Get players and set .players
     var newPlayerRef = firebase.database().ref(curSceneDB + '/players');
+    var lastPlayerRef = lastEventDB.child('/players');
     var playerScoreRef = firebase.database().ref('shows/show/players/player-data')
     var playerListRef = firebase.database().ref('shows/show/players/player-list')
     for (var i=1;i<14;i++){
@@ -362,6 +377,7 @@
       if ($('#'+curCheck).is(":checked"))
       {
         newPlayerRef.child(curPlayr).set(true);
+        lastPlayerRef.child(curPlayr).set(true);
         playerScoreRef.child(curPlayr).child('points').transaction(pScore => {
           return +pScore + +poeng;
         });
@@ -401,11 +417,53 @@
     window.location = '#showMenu';
   });
 
+  $("#btnUndo").on('click', () => {
+    var lastEventRef = firebase.database().ref('shows/show/lastEvent');
+    var playerScoreRef = firebase.database().ref('shows/show/players/player-data')
+    var playerListRef = firebase.database().ref('shows/show/players/player-list')
+    lastEventRef.once('value', snap => {
+      var undoData = snap.val();
+      var undoPlayers = undoData['players'];
+      console.log(undoData['points']);
+      if(snap.hasChild('points')){
+        for(var key in undoPlayers){
+          playerScoreRef.child(key).child('points').transaction(points =>{
+            return +points - +undoData['points'];
+          });
+          playerListRef.child(key).set(true);
+          playerScoreRef.child(key).child('active').set(true);
+          $('#checkbox'+key).enableCheckbox();
+        }
+        csRef.set(currentScene-1);
+        $('#btnElimination').closest('.ui-btn').hide();
+        console.log('gjemmer knapp');
+        $('#btnNewScene').closest('.ui-btn').show();
+        $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+        lastEventRef.remove();
+      }
+      else if(snap.hasChild('eliminated')){
+        for(var key in undoPlayers){
+          playerListRef.child(key).set(false);
+          playerScoreRef.child(key).child('active').set(false);
+          $('#checkbox'+key).enableCheckbox();
+        }
+        crRef.set(currentRound-1);
+        $('#btnNewScene').closest('.ui-btn').hide();
+        $('#btnElimination').closest('.ui-btn').show();
+        $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+        lastEventRef.remove();
+      }
+    });
+  });
+
   $("#btnEliminate").on('click', event => {
     //Get players and set .players
     var playerListRef = firebase.database().ref('shows/show/players/player-list');
     var playerDataRef = firebase.database().ref('shows/show/players/player-data');
     var cRoundRef = firebase.database().ref('shows/show/currentRound');
+    var lastEvent = firebase.database().ref('shows/show/lastEvent');
+    lastEvent.remove();
+    lastEvent.child('eliminated').set(true);
     for (var i=1;i<14;i++){
       var cPlayr = i;
       //console.log(curPlayr);
@@ -414,6 +472,7 @@
       {
         playerListRef.child(cPlayr).remove();
         playerDataRef.child(i).child("active").remove();
+        lastEvent.child('players/'+i).set(true);
         $('#'+cCheck).disableCheckbox();
       };
     };
@@ -425,11 +484,12 @@
         playerDataRef.child(key).child("active").set(true);
         $('#checkbox'+key).enableCheckbox();
       });
-      $('#btnElimination').closest("ui-btn").hide();
+      $('#btnElimination').closest(".ui-btn").hide();
+      $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
       if(snapshot.numChildren() >1){
-        $('#btnNewScene').closest("ui-btn").show();
+        $('#btnNewScene').closest(".ui-btn").show();
       }else{
-        $('#btnNewScene').closest("ui-btn").hide();
+        $('#btnNewScene').closest(".ui-btn").hide();
         console.log("the show is over");
       }
     });
