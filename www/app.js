@@ -82,16 +82,18 @@
   // Global Variables
   csRef.on('value', csnap => {
     currentScene = csnap.val();
-    console.log(currentScene);
+    console.log("CurrentScene:" + currentScene);
   });
   crRef.on('value', crsnap => {
     currentRound = crsnap.val();
-    console.log(currentRound);
+    console.log("CurrentRound:" + currentRound);
   });
-  var cPlayRef = firebase.database().ref("shows/show/players/player-list")
+  const playerListRef = firebase.database().ref("shows/show/players/player-list");
+  const playerDataRef = firebase.database().ref("shows/show/players/player-data");
+  const lastEventRef = firebase.database().ref("shows/show/lastEvent");
   var currentPlayers;
   var currentActive;
-  cPlayRef.on('value', psnap => {
+  playerListRef.on('value', psnap => {
     currentPlayers = psnap.numChildren();
     currentActive = 0;
     psnap.forEach(snapchild => {
@@ -118,7 +120,7 @@
 
   $('#showMenu').on("pagebeforeshow", e => {
     $('#btnElimination').closest('.ui-btn').hide();
-    cPlayRef.once('value', psnap => {
+    playerListRef.once('value', psnap => {
       currentPlayers = psnap.numChildren();
       currentActive = 0;
       var winner;
@@ -169,21 +171,19 @@
 
   $('#playerInput').submit(event => {
     var $form = $(this);
-    var players = "shows/show/players";
     var data = [];
-    var ref = firebase.database().ref(players);
     //Get all player names and set the data in Firebase
     for (i=1;i<14;i++){
       var playerSend = $("#player"+i).val();
       playeri= i;
       if(!playerSend && currentScene == 1){
-        ref.child("player-list").child(playeri).remove();
-        ref.child("player-data/" + playeri + "/active").remove();
+        playerListRef.child(playeri).remove();
+        playerDataRef.child(playeri + "/active").remove();
         $('#checkbox'+i).disableCheckbox();
       }else if(currentScene == 1){
-        ref.child("player-data").child(playeri).child("name").set(playerSend);
-        ref.child("player-list").child(playeri).set(true);
-        ref.child("player-data").child(playeri).child("active").set(true);
+        playerListRef.child(playeri).set(true);
+        playerDataRef.child(playeri).child("name").set(playerSend);
+        playerDataRef.child(playeri).child("active").set(true);
         $('#checkbox'+i).enableCheckbox();
       }else{
         ref.child("player-data").child(playeri).child("name").set(playerSend);
@@ -194,8 +194,7 @@
   });
 
   $('#scenePage').on("create", e => {
-    var ref = firebase.database().ref('shows/show/players/player-data');
-    ref.once("value").then(snapshot => {
+    playerDataRef.once("value").then(snapshot => {
       //Enable button 13 if player 13 has a name
       if(snapshot.child("13").child("name").val() == null){
         $("#knapp13").hide();
@@ -227,9 +226,8 @@
   });
 
   $("#btnElimination").on('click', e => {
-    const feedRef = firebase.database().ref('shows/show/players/player-data')
     var feed = [];
-    feedRef.orderByKey().once('value', (snaps, error) => {
+    playerDataRef.orderByKey().once('value', (snaps, error) => {
       var allItems = '';
       snaps.forEach(plSnap => {
         const plyr = plSnap.val()
@@ -252,9 +250,8 @@
   });
 
   $("#btnScores").on('click', e => {
-    const feedRef = firebase.database().ref('shows/show/players/player-data')
     var feed = [];
-    feedRef.orderByKey().once('value', (snaps, error) => {
+    playerDataRef.orderByKey().once('value', (snaps, error) => {
       var allItems = '';
       snaps.forEach(plSnap => {
         const plyr = plSnap.val()
@@ -280,7 +277,7 @@
   });
 
   $("#btnEndShow").on('click', () => {
-    $("#popupDialog").popup("open");
+    $("#endshowDialog").popup("open");
   });
 
   $("#endShowYes").on('click', () => {
@@ -349,8 +346,7 @@
 
     //Get a json of players and set .players
     var curSceneDB = "shows/show/scenes/" + currentScene;
-    var lastEventDB = firebase.database().ref("shows/show/lastEvent");
-    lastEventDB.remove();
+    lastEventRef.remove();
 
     //Get points and set .points
     var radios = $('[name="radio-poeng"]');
@@ -362,14 +358,13 @@
     pointRef = firebase.database().ref(curSceneDB + '/points');
     pointRef.set(+poeng);
 
-    lastEventDB.child("points").set(+poeng);
+    lastEventRef.child("points").set(+poeng);
+    console.log("setpoeng");
     $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
 
     //Get players and set .players
     var newPlayerRef = firebase.database().ref(curSceneDB + '/players');
-    var lastPlayerRef = lastEventDB.child('/players');
-    var playerScoreRef = firebase.database().ref('shows/show/players/player-data')
-    var playerListRef = firebase.database().ref('shows/show/players/player-list')
+    var lastPlayerRef = lastEventRef.child('/players');
     for (var i=1;i<14;i++){
       var curPlayr = i;
       //console.log(curPlayr);
@@ -378,11 +373,11 @@
       {
         newPlayerRef.child(curPlayr).set(true);
         lastPlayerRef.child(curPlayr).set(true);
-        playerScoreRef.child(curPlayr).child('points').transaction(pScore => {
+        playerDataRef.child(curPlayr).child('points').transaction(pScore => {
           return +pScore + +poeng;
         });
         playerListRef.child(curPlayr).set(false);
-        playerScoreRef.child(curPlayr).child("active").set(false);
+        playerDataRef.child(curPlayr).child("active").set(false);
         $('#'+curCheck).disableCheckbox();
       };
     }
@@ -416,54 +411,64 @@
     var ref = firebase.database().ref(showCurScene);
     window.location = '#showMenu';
   });
-
+  var undoData;
+  var undoPlayers;
   $("#btnUndo").on('click', () => {
-    var lastEventRef = firebase.database().ref('shows/show/lastEvent');
-    var playerScoreRef = firebase.database().ref('shows/show/players/player-data')
-    var playerListRef = firebase.database().ref('shows/show/players/player-list')
     lastEventRef.once('value', snap => {
-      var undoData = snap.val();
-      var undoPlayers = undoData['players'];
-      console.log(undoData['points']);
-      if(snap.hasChild('points')){
-        for(var key in undoPlayers){
-          playerScoreRef.child(key).child('points').transaction(points =>{
-            return +points - +undoData['points'];
-          });
-          playerListRef.child(key).set(true);
-          playerScoreRef.child(key).child('active').set(true);
-          $('#checkbox'+key).enableCheckbox();
-        }
-        csRef.set(currentScene-1);
-        $('#btnElimination').closest('.ui-btn').hide();
-        console.log('gjemmer knapp');
-        $('#btnNewScene').closest('.ui-btn').show();
-        $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
-        lastEventRef.remove();
+      undoData = snap.val();
+      undoPlayers = {};
+      undoPlayers = undoData['players'];
+      if (undoData.hasOwnProperty('points')){
+        undoHeader = "Scene " + (currentScene-1);
+        undoText = "Spillere: " + Object.keys(undoPlayers);
+        undoPoints = "<p>Poeng: " + undoData['points'] + "</p>";
+      } else if (undoData.hasOwnProperty('eliminated')){
+        undoHeader = "Eliminasjonsrunde " + (currentRound-1);
+        undoText = "Eliminerte: " + Object.keys(undoPlayers);
+        undoPoints = ""
       }
-      else if(snap.hasChild('eliminated')){
-        for(var key in undoPlayers){
-          playerListRef.child(key).set(false);
-          playerScoreRef.child(key).child('active').set(false);
-          $('#checkbox'+key).enableCheckbox();
-        }
-        crRef.set(currentRound-1);
-        $('#btnNewScene').closest('.ui-btn').hide();
-        $('#btnElimination').closest('.ui-btn').show();
-        $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
-        lastEventRef.remove();
-      }
+      $("#undoEvent").text(undoHeader);
+      $("#undoData").html("<p>" + undoText + "</p>" + undoPoints );
+      $("#undoDialog").popup("open");
+
+
     });
+  });
+  $("#btnUndoYes").on('click', e =>{
+    if(undoData.hasOwnProperty('points')){
+      for(var key in undoPlayers){
+        playerDataRef.child(key).child('points').transaction(pts => {
+          x = +pts - +undoData['points'];
+          console.log(x);
+          return x;
+        });
+        playerListRef.child(key).set(true);
+        playerDataRef.child(key).child('active').set(true);
+        $('#checkbox'+key).enableCheckbox();
+      }
+      csRef.set(currentScene-1);
+      $('#btnElimination').closest('.ui-btn').hide();
+      $('#btnNewScene').closest('.ui-btn').show();
+      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+      lastEventRef.remove();
+    }else if(undoData.hasOwnProperty('eliminated')){
+      for(var key in undoPlayers){
+        playerListRef.child(key).set(false);
+        playerDataRef.child(key).child('active').set(false);
+        $('#checkbox'+key).enableCheckbox();
+      }
+      crRef.set(currentRound-1);
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $('#btnElimination').closest('.ui-btn').show();
+      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+      lastEventRef.remove();
+    }
   });
 
   $("#btnEliminate").on('click', event => {
     //Get players and set .players
-    var playerListRef = firebase.database().ref('shows/show/players/player-list');
-    var playerDataRef = firebase.database().ref('shows/show/players/player-data');
-    var cRoundRef = firebase.database().ref('shows/show/currentRound');
-    var lastEvent = firebase.database().ref('shows/show/lastEvent');
-    lastEvent.remove();
-    lastEvent.child('eliminated').set(true);
+    lastEventRef.remove();
+    lastEventRef.child('eliminated').set(true);
     for (var i=1;i<14;i++){
       var cPlayr = i;
       //console.log(curPlayr);
@@ -472,7 +477,7 @@
       {
         playerListRef.child(cPlayr).remove();
         playerDataRef.child(i).child("active").remove();
-        lastEvent.child('players/'+i).set(true);
+        lastEventRef.child('players/'+i).set(true);
         $('#'+cCheck).disableCheckbox();
       };
     };
@@ -493,13 +498,11 @@
         console.log("the show is over");
       }
     });
-    cRoundRef.set(currentRound+1);
+    crRef.set(currentRound+1);
     window.location = '#showMenu';
   });
 
   $("#btnPardon").on('click', event => {
-    var playerListRef = firebase.database().ref('shows/show/players/player-list');
-    var playerDataRef = firebase.database().ref('shows/show/players/player-data');
     var cRoundRef = firebase.database().ref('shows/show/currentRound');
     playerListRef.once('value', function(snapshot){
       snapshot.forEach(function(playerSnapshot){
@@ -515,7 +518,7 @@
         $('#btnNewScene').closest("ui-btn").hide();
         console.log("the show is over");
       }
-      cRoundRef.set(currentRound+1);
+      crRef.set(currentRound+1);
     window.location = '#showMenu' ;
     });
   });

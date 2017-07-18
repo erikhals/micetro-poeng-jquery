@@ -95,8 +95,7 @@
       });
       ref.on('value', snapshot => {
         for(var i = 0; i < players.length; i++) {
-    			players[i].$item.find(".changes").text("").delay(3000).css("opacity","1");
-          //players[i].$item.find(".changes").css("opacity","1");
+    			players[i].$item.find(".changes").text("").css("opacity","1");
     		}
       });
     });
