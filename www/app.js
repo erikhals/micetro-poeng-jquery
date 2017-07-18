@@ -402,8 +402,6 @@
 
     var CurSceneRef = firebase.database().ref("shows/show/currentScene");
     CurSceneRef.set(currentScene+1);
-
-
   });
 
   $("#btnSceneCancel").on('click', () => {
