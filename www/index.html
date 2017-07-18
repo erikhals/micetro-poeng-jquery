@@ -208,10 +208,12 @@
           </div> <!-- footer -->
 
           <div data-role="popup" id="endshowDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
-            <div role="main" class="ui-content">
-            <h3 class="ui-title">Vil du nullstille showet?</h3>
-             <a href="#" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Nei</a>
-             <a href="#" id="endShowYes" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b">Ja</a>
+            <div data-role="header" data-theme="a">
+              <h1>Nullstill show</h1>
+            </div>
+            <div role="main" class="ui-content">
+             <a href="#" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Avbryt</a>
+             <a href="#" id="endShowYes" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b">Nullstill</a>
             </div>
           </div>
 
@@ -222,8 +224,8 @@
             <div role="main" class="ui-content">
             <h3 id="undoEvent" class="ui-title"></h3>
             <div id="undoData"></div>
-             <a href="#" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Nei</a>
-             <a href="#" id="btnUndoYes" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Ja</a>
+             <a href="#" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Avbryt</a>
+             <a href="#" id="btnUndoYes" class="ui-content ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Angre</a>
             </div>
           </div>
         </div> <!-- page -->
