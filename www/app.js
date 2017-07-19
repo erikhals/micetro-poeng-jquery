@@ -46,6 +46,12 @@
   const crRef = firebase.database().ref("shows/show/currentRound");
   var currentRound;
 
+  const lastEventRef = firebase.database().ref("shows/show/lastEvent");
+  var lastEvent;
+
+  var undoData;
+  var undoPlayers;
+
   //Add login event
   btnLogIn.on('click', e => {
     //Get email and password
@@ -88,11 +94,15 @@
     currentRound = crsnap.val();
     console.log("CurrentRound:" + currentRound);
   });
+  lastEventRef.on('value', lesnap =>{
+    lastEvent = lesnap.val();
+  });
   const playerListRef = firebase.database().ref("shows/show/players/player-list");
   const playerDataRef = firebase.database().ref("shows/show/players/player-data");
-  const lastEventRef = firebase.database().ref("shows/show/lastEvent");
+
   var currentPlayers;
   var currentActive;
+
   playerListRef.on('value', psnap => {
     currentPlayers = psnap.numChildren();
     currentActive = 0;
@@ -143,6 +153,10 @@
         $('#btnElimination').closest('.ui-btn').hide();
         $('#btnNewScene').closest('.ui-btn').show();
         $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
+      }
+      if(lastEvent){
+        $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
+        console.log(lastEvent);
       }
     });
   });
@@ -320,7 +334,7 @@
       console.log(numScenes);
       var allItems = '';
       for (var i=1; i<= numScenes; i++){
-        var scPts = snapshot.child('scene'+i).child('points').val();
+        var scPts = snapshot.child(i).child('points').val();
         allItems += '<li data-rowid="' + i + '" data-icon="delete"><a href="#">Scene ' + i + '<p class="ui-li-aside"> Poeng: <strong>'+scPts+'</strong></p></a></li>';
       }
       $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
@@ -409,8 +423,7 @@
     var ref = firebase.database().ref(showCurScene);
     window.location = '#showMenu';
   });
-  var undoData;
-  var undoPlayers;
+
   $("#btnUndo").on('click', () => {
     lastEventRef.once('value', snap => {
       undoData = snap.val();
@@ -423,7 +436,11 @@
       } else if (undoData.hasOwnProperty('eliminated')){
         undoHeader = "Eliminasjonsrunde " + (currentRound-1);
         undoText = "Eliminerte: " + Object.keys(undoPlayers);
-        undoPoints = ""
+        undoPoints = "";
+      }else if (undoData.hasOwnProperty('pardoned')){
+        undoHeader = "Eliminasjonsrunde " + (currentRound-1);
+        undoText = "Alle videre - ingen Eliminerte";
+        undoPoints = "";
       }
       $("#undoEvent").text(undoHeader);
       $("#undoData").html("<p>" + undoText + "</p>" + undoPoints );
@@ -460,6 +477,11 @@
       $('#btnElimination').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       lastEventRef.remove();
+    }else if(undoData.hasOwnProperty('pardoned')){
+      crRef.set(currentRound-1);
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $('#btnElimination').closest('.ui-btn').show();
+      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
     }
   });
 
@@ -501,7 +523,8 @@
   });
 
   $("#btnPardon").on('click', event => {
-    var cRoundRef = firebase.database().ref('shows/show/currentRound');
+    lastEventRef.remove();
+    lastEventRef.child('pardoned').set(true);
     playerListRef.once('value', function(snapshot){
       snapshot.forEach(function(playerSnapshot){
         var key = playerSnapshot.key;
