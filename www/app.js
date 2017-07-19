@@ -8,6 +8,8 @@
     messagingSenderId: "38039570025"
   };
 
+
+  firebase.initializeApp(config);
   //Disable and enable checkboxes
   jQuery.fn.extend({
     enableCheckbox: function() {
@@ -24,8 +26,7 @@
     }
   });
 
-  function refreshPage()
-  {
+  function refreshPage(){
     jQuery.mobile.changePage(window.location.href, {
         allowSamePageTransition: true,
         transition: 'none',
@@ -33,18 +34,39 @@
     });
   }
 
-  firebase.initializeApp(config);
+  function buttonsUpdate(){
+    if (currentActive == 0 && currentPlayers > 1){
+      $('#btnElimination').closest('.ui-btn').show();
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
+    }else if(currentPlayers == 1){
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $('#btnElimination').closest('.ui-btn').hide();
+      $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
+    }else{
+      $('#btnElimination').closest('.ui-btn').hide();
+      $('#btnNewScene').closest('.ui-btn').show();
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
+    }
+  }
 
   //get elements
   const passWd = $('#userPassword');
   const btnLogIn = $('#btnLogIn');
 
+  //Declare global variables
   const csRef = firebase.database().ref("shows/show/currentScene");
   var currentScene;
 
-  // CurrentRound variable
   const crRef = firebase.database().ref("shows/show/currentRound");
   var currentRound;
+
+  const playerListRef = firebase.database().ref("shows/show/players/player-list");
+  const playerDataRef = firebase.database().ref("shows/show/players/player-data");
+
+  var currentPlayers;
+  var currentActive;
+  var winner;
 
   const lastEventRef = firebase.database().ref("shows/show/lastEvent");
   var lastEvent;
@@ -85,7 +107,7 @@
     }
   });
 
-  // Global Variables
+  // Set Global Variables
   csRef.on('value', csnap => {
     currentScene = csnap.val();
     console.log("CurrentScene:" + currentScene);
@@ -97,11 +119,7 @@
   lastEventRef.on('value', lesnap =>{
     lastEvent = lesnap.val();
   });
-  const playerListRef = firebase.database().ref("shows/show/players/player-list");
-  const playerDataRef = firebase.database().ref("shows/show/players/player-data");
 
-  var currentPlayers;
-  var currentActive;
 
   playerListRef.on('value', psnap => {
     currentPlayers = psnap.numChildren();
@@ -124,37 +142,22 @@
     });
   });
 
-  $('#showMenu').on("pageshow", e => {
-    //$.mobile.loading( "show" );
-  });
-
   $('#showMenu').on("pagebeforeshow", e => {
     $('#btnElimination').closest('.ui-btn').hide();
+    //Get players from database
     playerListRef.once('value', psnap => {
       currentPlayers = psnap.numChildren();
       currentActive = 0;
-      var winner;
-      //$.mobile.loading( "hide" );
+      //Set number of active players not played this round
       psnap.forEach(snapchild => {
         if (snapchild.val()==true){
           currentActive++;
           winner = snapchild.key;
         };
       });
-      if (currentActive == 0 && currentPlayers > 1){
-        $('#btnElimination').closest('.ui-btn').show();
-        $('#btnNewScene').closest('.ui-btn').hide();
-        $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
-      }else if(currentPlayers == 1){
-        $('#btnNewScene').closest('.ui-btn').hide();
-        $('#btnElimination').closest('.ui-btn').hide();
-        $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
-      }else{
-        $('#btnElimination').closest('.ui-btn').hide();
-        $('#btnNewScene').closest('.ui-btn').show();
-        $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
-      }
-      if(lastEvent){
+      //Update buttons and header
+      buttonsUpdate();
+      if(lastEvent){ //Undo function
         $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
         console.log(lastEvent);
       }
