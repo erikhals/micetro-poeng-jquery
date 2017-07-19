@@ -55,6 +55,7 @@
   const btnLogIn = $('#btnLogIn');
 
   //Declare global variables
+  const showRef = firebase.database().ref("shows/show");
   const csRef = firebase.database().ref("shows/show/currentScene");
   var currentScene;
 
@@ -298,8 +299,7 @@
   });
 
   $("#endShowYes").on('click', () => {
-    var ref = firebase.database().ref("shows/show");
-    ref.remove();
+    showRef.remove();
     for (var i=1;i<14;i++){
       $('#checkbox'+i).enableCheckbox();
       //$('#checkbox'+i).closest("div").removeClass('ui-state-disabled');
@@ -313,10 +313,9 @@
   });
 
   $("#btnNewShow").on('click', e => {
-    var ref = firebase.database().ref("shows/show");
-    ref.remove();
-    ref.child("currentScene").set(1);
-    ref.child("currentRound").set(1);
+    showRef.remove();
+    csRef.set(1);
+    crRef.set(1);
     for (var i=1;i<14;i++){
       $('#checkbox'+i).enableCheckbox();
     };
@@ -362,7 +361,7 @@
   $("#btnSceneSubmit").on('click', () => {
 
     //Get a json of players and set .players
-    var curSceneDB = "shows/show/scenes/" + currentScene;
+    var curSceneRef = firebase.database().ref("shows/show/scenes/" + currentScene);
     lastEventRef.remove();
 
     //Get points and set .points
@@ -372,15 +371,14 @@
       if(radios[i].checked)
       poeng = radios[i].value;
     }
-    pointRef = firebase.database().ref(curSceneDB + '/points');
+    pointRef = curSceneRef.child('/points');
     pointRef.set(+poeng);
 
     lastEventRef.child("points").set(+poeng);
-    console.log("setpoeng");
     $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
 
     //Get players and set .players
-    var newPlayerRef = firebase.database().ref(curSceneDB + '/players');
+    var newPlayerRef = curSceneRef.child('/players');
     var lastPlayerRef = lastEventRef.child('/players');
     for (var i=1;i<14;i++){
       var curPlayr = i;
@@ -468,6 +466,8 @@
       $('#btnElimination').closest('.ui-btn').hide();
       $('#btnNewScene').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
+
       lastEventRef.remove();
     }else if(undoData.hasOwnProperty('eliminated')){
       for(var key in undoPlayers){
@@ -479,13 +479,16 @@
       $('#btnNewScene').closest('.ui-btn').hide();
       $('#btnElimination').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
       lastEventRef.remove();
     }else if(undoData.hasOwnProperty('pardoned')){
       crRef.set(currentRound-1);
       $('#btnNewScene').closest('.ui-btn').hide();
       $('#btnElimination').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
     }
+    //buttonsUpdate();
   });
 
   $("#btnEliminate").on('click', event => {
