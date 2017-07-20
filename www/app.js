@@ -228,7 +228,6 @@
       buttonsUpdate();
       if(lastEvent){ //Undo function
         $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
-        console.log(lastEvent);
       }
     });
   });
@@ -374,7 +373,6 @@
     var lastPlayerRef = lastEventRef.child('/players');
     for (var i=1;i<14;i++){
       var curPlayr = i;
-      //console.log(curPlayr);
       var curCheck = "checkbox"+i;
       if ($('#'+curCheck).is(":checked"))
       {
@@ -411,7 +409,6 @@
   });
 
   $("#btnEditScene").on('click', e => {
-    console.log("edit scene");
     //make list dynamically
     var ref = firebase.database().ref("shows/show/scenes");
     var data = [];
@@ -452,7 +449,6 @@
     lastEventRef.child('eliminated').set(true);
     for (var i=1;i<14;i++){
       var cPlayr = i;
-      //console.log(curPlayr);
       var cCheck = "checkbox"+i;
       if ($('#el'+cCheck).is(":checked"))
       {
@@ -476,7 +472,6 @@
         $('#btnNewScene').closest(".ui-btn").show();
       }else{
         $('#btnNewScene').closest(".ui-btn").hide();
-        console.log("the show is over");
       }
     });
     crRef.set(currentRound+1);
