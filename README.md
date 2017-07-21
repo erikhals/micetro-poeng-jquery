@@ -12,3 +12,7 @@ In your browser, open the file:
 
     /www/index.html
 
+For the leaderboard, open: 
+
+    /www/leaderboard.html
+
