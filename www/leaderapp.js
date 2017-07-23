@@ -9,8 +9,8 @@
   };
 
   firebase.initializeApp(config);
-  const ref = firebase.database().ref("shows/show/currentRound");
-  const feedRef = firebase.database().ref('shows/show/players/player-data')
+  const crRef = firebase.database().ref("shows/show/currentRound");
+  const pdataRef = firebase.database().ref('shows/show/players/player-data')
   var players = [];
 
 
@@ -19,28 +19,40 @@
   function reposition() {
     var height = $("#leaderboard .header").height();
 		var y = height;
-		for(var i = 0; i < players.length; i++) {
+		for(var i = 0, j=players.length; i < j; i++) {
 			players[i].$item.css("top", y + "px");
 			y += height;
 		}
 	}
 
+  function animateBoard(){
+    var delay = 100;
+    var y = 300;
+    for(var i = 0; i < players.length; i++) {
+        (function(index){setTimeout(() =>{
+          players[index].$item.addClass("animated flipInX");
+        }, y);
+        })(i);
+			y += delay;
+		};
+  }
+
   function updateBoard() {
     players.sort(descending);
 		updateRanks(players);
 		reposition();
-		}
+	}
 
   function updateRanks(players) {
 		for(var i = 0; i < players.length; i++) {
-			//players[i].$item.find(".rank").text(i + 1);
+			players[i].rank = (i + 1);
 		}
 	}
 
   $(document).ready( e => {
 
     var $list = $("#players");
-    feedRef.orderByKey().once('value', (snap, error) => {
+    pdataRef.orderByKey().once('value', (snap, error) => {
       snap.forEach(plSnap => {
         var plyr = plSnap.val()
         plyr['number'] = +plSnap.key;
@@ -55,7 +67,6 @@
       for(var i = 0; i < players.length; i++) {
         var $item = $(
           "<li class='player'>" +
-          //"<div class='rank'>" + (i + 1) + "</div>" +
           "<div class='number'>" + (players[i].number) + ". </div>" +
           "<div class='name'>" + players[i].name + "</div>" +
           "<div class='changes'></div>" +
@@ -64,12 +75,11 @@
           players[i].$item = $item;
           players[i].$item.find(".changes").css("opacity","1.0");
           $list.append($item);
-
         }
-      updateBoard();
+      animateBoard();
     }).then(() => {
 
-      feedRef.orderByChild('points').on('value', (snap, error) => {
+      pdataRef.orderByChild('points').on('value', (snap, error) => {
         snap.forEach(plSnap => {
           var pdata = plSnap.val()
           var index = players.map((o) => o.number).indexOf(+plSnap.key);
@@ -82,7 +92,7 @@
           }
           if (player.diff > 0){
             player.$item.find(".changes").text("+"+player.diff);
-            player.$item.find(".changes").delay( 3000 ).css("opacity","0.2");
+            player.$item.find(".changes").css("opacity","0.2");
           }
           if (!pdata.hasOwnProperty("active")){
             player.eliminated = true;
@@ -91,12 +101,14 @@
           player.$item.find(".points").text(player.points);
         });
 
-        setTimeout(updateBoard(), 3000);
+        updateBoard();
+        $('#leaderboard').find(".header").addClass('animated fadeIn');
       });
-      ref.on('value', snapshot => {
+      crRef.on('value', snapshot => {
         for(var i = 0; i < players.length; i++) {
     			players[i].$item.find(".changes").text("").css("opacity","1");
     		}
+
       });
     });
 
