@@ -237,6 +237,7 @@
           </div> <!-- header -->
           <div data-role="main" class="ui-content">
               <form action="" id="sceneInput">
+                <input type="text" name="sceneNavn" id="sceneNavn" placeholder="Scenenavn">
                 <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
                   <legend>Spillere:</legend>
                   <input type="checkbox" name="checkbox1" id="checkbox1" class="nummerTaster"></input>
@@ -276,19 +277,19 @@
                 </fieldset>
                 <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
                   <legend>Poeng:</legend>
-                  <input type="radio" name="radio-poeng" id="radio-a" value=1 class="nummerTaster"></input>
+                  <input type="radio" name="radio-poeng" id="radio-a" value=1 class="nummerTaster radioKnapp"></input>
                   <label for="radio-a">1</label>
-                  <input type="radio" name="radio-poeng" id="radio-b" value=2 class="nummerTaster"></input>
+                  <input type="radio" name="radio-poeng" id="radio-b" value=2 class="nummerTaster radioKnapp"></input>
                   <label for="radio-b">2</label>
-                  <input type="radio" name="radio-poeng" id="radio-c" value=3 class="nummerTaster" checked="true"></input>
+                  <input type="radio" name="radio-poeng" id="radio-c" value=3 class="nummerTaster radioKnapp"></input>
                   <label for="radio-c">3</label>
-                  <input type="radio" name="radio-poeng" id="radio-d" value=4 class="nummerTaster"></input>
+                  <input type="radio" name="radio-poeng" id="radio-d" value=4 class="nummerTaster radioKnapp"></input>
                   <label for="radio-d">4</label>
-                  <input type="radio" name="radio-poeng" id="radio-e" value=5 class="nummerTaster"></input>
+                  <input type="radio" name="radio-poeng" id="radio-e" value=5 class="nummerTaster radioKnapp"></input>
                   <label for="radio-e">5</label>
                 </fieldset>
               </form>
-              <button id="btnSceneSubmit" class="btn btn-action">Send</button>
+              <button id="btnSceneSubmit" class="btn btn-action ui-state-disabled">Send</button>
               <button id="btnSceneCancel" class="btn btn-action">Avbryt</button>
           </div> <!-- main -->
           <div data-role="footer" id="footer">

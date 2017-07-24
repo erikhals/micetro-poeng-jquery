@@ -237,6 +237,7 @@
     for(var i=1;i<=13;i++){
       $('#checkbox'+i).checkboxradio().checkboxradio("refresh");
     };
+    $('#btnSceneSubmit').closest('.ui-btn').addClass('ui-state-disabled');
     $('#sceneHeader').html("Scene " + currentScene);
     window.location = '#scenePage';
   });
@@ -349,12 +350,17 @@
     });
   });
 
+  $(".radioKnapp").click( e => {
+    $('#btnSceneSubmit').removeAttr('disabled').removeClass('ui-state-disabled');
+  });
+
   $("#btnSceneSubmit").on('click', e => {
 
     //Get a json of players and set .players
     var curSceneRef = firebase.database().ref("shows/show/scenes/" + currentScene);
     lastEventRef.remove();
-
+    var sceneNavn = $('#sceneNavn').val();
+    curSceneRef.child('/scenenavn').set(sceneNavn);
     //Get points and set .points
     var radios = $('[name="radio-poeng"]');
     var poeng = 0;
