@@ -25,7 +25,7 @@
 		}
 	}
 
-  function animateBoard(){
+  function initBoard(){
     var delay = 100;
     var y = 300;
     for(var i = 0; i < players.length; i++) {
@@ -76,7 +76,7 @@
           players[i].$item.find(".changes").css("opacity","1.0");
           $list.append($item);
         }
-      animateBoard();
+      initBoard();
     }).then(() => {
 
       pdataRef.orderByChild('points').on('value', (snap, error) => {
@@ -108,7 +108,15 @@
         for(var i = 0; i < players.length; i++) {
     			players[i].$item.find(".changes").text("").css("opacity","1");
     		}
-
+        $('#roundheader').text('Runde '+snapshot.val())
+        setTimeout(()=>{
+          $('#popup1').removeClass('animated fadeOut').addClass('animated fadeIn');
+          $('#popupmessage').removeClass('animated flipOutY').addClass("animated flipInY");
+        },5000);
+        setTimeout(()=>{
+          $('#popup1').removeClass('animated fadeIn').addClass('animated fadeOut');
+          $('#popupmessage').removeClass('animated flipInY').addClass("animated flipOutY");
+        },9000);
       });
     });
 
