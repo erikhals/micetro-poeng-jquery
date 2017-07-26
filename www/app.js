@@ -360,7 +360,7 @@
     var curSceneRef = firebase.database().ref("shows/show/scenes/" + currentScene);
     lastEventRef.remove();
     var sceneNavn = $('#sceneNavn').val();
-    curSceneRef.child('/scenenavn').set(sceneNavn);
+    curSceneRef.child('/name').set(sceneNavn);
     //Get points and set .points
     var radios = $('[name="radio-poeng"]');
     var poeng = 0;
@@ -423,7 +423,10 @@
       var allItems = '';
       for (var i=1, j=numScenes; i<= j; i++){
         var scPts = snapshot.child(i).child('points').val();
-        allItems += '<li data-rowid="' + i + '" data-icon="delete"><a href="#">Scene ' + i + '<p class="ui-li-aside"> Poeng: <strong>'+scPts+'</strong></p></a></li>';
+        var scName = snapshot.child(i).child('name').val() || "Navn";
+        var scPlyrs = snapshot.child(i).child('players').val() || "0" ;
+        console.log(scPlyrs);
+        allItems += '<li data-icon="edit" data-rowid="' + i + '" ><a href="#"> <h1>Sc' + i + ': '+scName+' - '+scPts+'p </h1><p><strong>Spillere: '+Object.keys(scPlyrs)+'</strong></p></a></li>';
       }
       $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
     });
