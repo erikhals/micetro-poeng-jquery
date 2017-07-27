@@ -64,7 +64,7 @@
   var playerList;
   const playerDataRef = firebase.database().ref("shows/show/players/player-data");
   var playerData;
-  const showEventsRef = firebase.database().ref("shows/show/events")
+  const showEventsRef = firebase.database().ref("shows/show/events");
   var showEvents;
 
   var currentPlayers;
@@ -73,6 +73,7 @@
 
   const lastEventRef = firebase.database().ref("shows/show/lastEvent");
   var lastEvent;
+  var last;
 
   var undoData;
   var undoPlayers;
@@ -142,9 +143,13 @@
 
   lastEventRef.on('value', lesnap =>{
     lastEvent = lesnap.val();
+    console.log(lastEvent);
   });
+
   showEventsRef.on('value', shsnap =>{
-    showEvents = shsnap;
+    showEvents = shsnap.val();
+    last = showEvents[showEvents.length -1];
+    console.log(last);
     currentEvent = shsnap.numChildren()+1;
     console.log(currentEvent);
   });
@@ -307,11 +312,11 @@
         undoHeader = "Scene " + (currentScene-1);
         undoText = "Spillere: " + Object.keys(undoPlayers);
         undoPoints = "<p>Poeng: " + undoData['points'] + "</p>";
-      } else if (undoData.hasOwnProperty('eliminated')){  //last event was elimination
+      } else if (undoData.hasOwnProperty('players')){  //last event was elimination
         undoHeader = "Eliminasjonsrunde " + (currentRound-1);
         undoText = "Eliminerte: " + Object.keys(undoPlayers);
         undoPoints = "";
-      }else if (undoData.hasOwnProperty('pardoned')){     //last event was a pardon
+      }else{     //last event was a pardon
         undoHeader = "Eliminasjonsrunde " + (currentRound-1);
         undoText = "Alle videre - ingen Eliminerte";
         undoPoints = "";
@@ -455,7 +460,8 @@
     ref.once('value', snapshot => {
       var numScenes = snapshot.numChildren();
       var allItems = '';
-      for (var i=1, j=numScenes; i<= j; i++){
+      var nRound = true;
+      for (var i=1, j=numScenes; i <= j; i++){
         var scPts = snapshot.child(i).child('points').val();
         var scName = snapshot.child(i).child('name').val() || "Navn";
         var scNumber = snapshot.child(i).child('number').val();
@@ -463,33 +469,39 @@
         var scPlyrs = snapshot.child(i).child('players');
         var scPlyrNames = getNames(scPlyrs);
         if (scNumber){
-          allItems += '<li data-icon="edit" data-rowid="' + i + '" ><a href="#"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
+          if(nRound == true){
+            allItems += '<li data-role="list-divider">Runde '+(scRound)+'</li>';
+            nRound = false;
+          }
+          if(scRound == currentRound){
+            allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
+          }else{
+            allItems += '<li data-rowid="'+i+'"><h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></li>';
+          }
+        }else if(scPlyrs.val()){
+          if(scRound == currentRound-1){
+            allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></a></li>';
+          }else{
+            allItems += '<li data-rowid="'+i+'" data-icon="edit"><h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></li>';
+            console.log(currentRound +"and"+ scRound);
+          }
+          nRound = true;
+        }else{
+          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li>';
+          nRound = true;
         }
-        else if(scPlyrs.val()){
-          allItems += '<li data-icon="edit" data-rowid="' + i + '" ><a href="#"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></a></li><li data-role="list-divider">Runde '+(scRound+1)+'</li>';
-        }
-        else{
-          allItems += '<li data-icon="edit" data-rowid="' + i + '" ><a href="#"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li><li data-role="list-divider">Runde '+(scRound+1)+'</li>';
-        }
-      }
+      };
+
       $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
-    });
 
-
-
-    $("#scenelist").on("click", "li input", e => {
-      e.stopImmediatePropagation();
-      var rowid = $(this).parents("li").data("rowid");
-      var btnText = $(this).val();
-      console.log("You clicked the button: " + btnText + " on row number: " + rowid);
-    });
-
-    $("#scenelist").on("click", "li a", e => {
-      var rowid = $(this).parents("li").data("rowid");
-      console.log("You clicked the " +rowid+" listitem");
     });
     window.location = '#sceneEditPage';
   });
+
+   $("#scenelist").on("click", "li a", function(e){
+      var rowid = $(this).parents("li").data("rowid");
+      console.log(rowid);
+    });
 
   $("#btnSceneCancel").on('click', e => {
     window.location = '#showMenu';
@@ -538,7 +550,6 @@
     var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
     curSceneRef.child('/round').set(currentRound);
     lastEventRef.remove();
-    lastEventRef.child('pardoned').set(true);
     playerListRef.once('value', function(snapshot){
       snapshot.forEach(function(playerSnapshot){
         var key = playerSnapshot.key;
@@ -581,7 +592,7 @@
       $('#btnNewScene').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
-    }else if(undoData.hasOwnProperty('eliminated')){  //last event was elimination round
+    }else if(undoData.hasOwnProperty('players')){  //last event was elimination round
       for(var key in undoPlayers){                    //de-eliminate players
         playerListRef.child(key).set(false);
         playerDataRef.child(key).child('active').set(false);
@@ -592,7 +603,7 @@
       $('#btnElimination').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
-    }else if(undoData.hasOwnProperty('pardoned')){    //last event all players were pardoned
+    }else{    //last event all players were pardoned
       crRef.set(currentRound-1);                      //update counter and buttons
       $('#btnNewScene').closest('.ui-btn').hide();
       $('#btnElimination').closest('.ui-btn').show();
