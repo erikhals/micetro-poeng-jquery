@@ -1,4 +1,5 @@
 (function () {
+  //Firebase functions
   var config = {
     apiKey: "AIzaSyDA3OKvkpat-9LFYSG0GnfY2xrfpLmz4aE",
     authDomain: "micetro-poeng.firebaseapp.com",
@@ -8,72 +9,11 @@
     messagingSenderId: "38039570025"
   };
 
-
   firebase.initializeApp(config);
-  //Disable and enable checkboxes
-  jQuery.fn.extend({
-    enableCheckbox: function() {
-      return this.each(function() {
-        $(this).checkboxradio().checkboxradio( "option", "disabled", false );
-        $(this).closest('div').removeClass('mobile-checkboxradio-disabled');
-      });
-    },
-    disableCheckbox: function() {
-      return this.each(function() {
-        $(this).checkboxradio().checkboxradio( "option", "disabled", true );
-        $(this).closest('div').addClass('mobile-checkboxradio-disabled');
-      });
-    }
-  });
-
-  function refreshPage(){
-    jQuery.mobile.changePage(window.location.href, {
-        allowSamePageTransition: true,
-        transition: 'none',
-        reloadPage: true
-    });
-  }
-
-  function buttonsUpdate(){
-    if (currentActive == 0 && currentPlayers > 1){
-      $('#btnElimination').closest('.ui-btn').show();
-      $('#btnNewScene').closest('.ui-btn').hide();
-      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
-    }else if(currentPlayers == 1){
-      $('#btnNewScene').closest('.ui-btn').hide();
-      $('#btnElimination').closest('.ui-btn').hide();
-      $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
-    }else{
-      $('#btnElimination').closest('.ui-btn').hide();
-      $('#btnNewScene').closest('.ui-btn').show();
-      $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
-    }
-  }
 
   //get elements
   const passWd = $('#userPassword');
   const btnLogIn = $('#btnLogIn');
-
-  //Declare global variables
-  const showRef = firebase.database().ref("shows/show");
-  const csRef = firebase.database().ref("shows/show/currentScene");
-  var currentScene;
-
-  const crRef = firebase.database().ref("shows/show/currentRound");
-  var currentRound;
-
-  const playerListRef = firebase.database().ref("shows/show/players/player-list");
-  const playerDataRef = firebase.database().ref("shows/show/players/player-data");
-
-  var currentPlayers;
-  var currentActive;
-  var winner;
-
-  const lastEventRef = firebase.database().ref("shows/show/lastEvent");
-  var lastEvent;
-
-  var undoData;
-  var undoPlayers;
 
   //Add login event
   btnLogIn.on('click', e => {
@@ -108,6 +48,89 @@
     }
   });
 
+
+  //Declare global variables
+  const showRef = firebase.database().ref("shows/show");
+  const csRef = firebase.database().ref("shows/show/currentScene");
+  var currentScene;
+
+  const crRef = firebase.database().ref("shows/show/currentRound");
+  var currentRound;
+
+  const ceRef = firebase.database().ref("shows/show/currentEvent");
+  var currentEvent;
+
+  const playerListRef = firebase.database().ref("shows/show/players/player-list");
+  var playerList;
+  const playerDataRef = firebase.database().ref("shows/show/players/player-data");
+  var playerData;
+  const showEventsRef = firebase.database().ref("shows/show/events");
+  var showEvents;
+
+  var currentPlayers;
+  var currentActive;
+  var winner;
+
+  const lastEventRef = firebase.database().ref("shows/show/lastEvent");
+  var lastEvent;
+  var last;
+
+  var undoData;
+  var undoPlayers;
+
+  //Disable and enable checkboxes functions
+  jQuery.fn.extend({
+    enableCheckbox: function() {
+      return this.each(function() {
+        $(this).checkboxradio().checkboxradio( "option", "disabled", false );
+        $(this).closest('div').removeClass('mobile-checkboxradio-disabled');
+      });
+    },
+    disableCheckbox: function() {
+      return this.each(function() {
+        $(this).checkboxradio().checkboxradio( "option", "disabled", true );
+        $(this).closest('div').addClass('mobile-checkboxradio-disabled');
+      });
+    }
+  });
+
+  //Update buttons on show menu
+  function buttonsUpdate(){
+    if (currentActive == 0 && currentPlayers > 1){
+      $('#btnElimination').closest('.ui-btn').show();
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
+    }else if(currentPlayers == 1){
+      $('#btnNewScene').closest('.ui-btn').hide();
+      $('#btnElimination').closest('.ui-btn').hide();
+      $("#showInfo").html("<h3>Kveldens Micetro er Spiller "+winner+"</h3>");
+    }else{
+      $('#btnElimination').closest('.ui-btn').hide();
+      $('#btnNewScene').closest('.ui-btn').show();
+      $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
+    }
+  }
+
+  //Refresh page - not used
+  function refreshPage(){
+    jQuery.mobile.changePage(window.location.href, {
+        allowSamePageTransition: true,
+        transition: 'none',
+        reloadPage: true
+    });
+  }
+
+  //Get player names
+  function getNames(players){
+    var output = "";
+    players.forEach(snap=>{
+      var name = playerData.child(snap.key).child("name").val();
+      output += snap.key +"."+ name+", ";
+    });
+    output = output.slice(0, -2);
+    return output;
+  }
+
   // Set Global Variables
   csRef.on('value', csnap => {
     currentScene = csnap.val();
@@ -117,12 +140,25 @@
     currentRound = crsnap.val();
     console.log("CurrentRound:" + currentRound);
   });
+
   lastEventRef.on('value', lesnap =>{
     lastEvent = lesnap.val();
+    console.log(lastEvent);
   });
 
+  showEventsRef.on('value', shsnap =>{
+    showEvents = shsnap.val();
+    last = showEvents[showEvents.length -1];
+    console.log(last);
+    currentEvent = shsnap.numChildren()+1;
+    console.log(currentEvent);
+  });
+  playerDataRef.on('value', pdsnap => {
+    playerData = pdsnap;
+  });
 
   playerListRef.on('value', psnap => {
+    playerList = psnap;
     currentPlayers = psnap.numChildren();
     currentActive = 0;
     psnap.forEach(snapchild => {
@@ -170,6 +206,7 @@
     showRef.remove();
     csRef.set(1);
     crRef.set(1);
+    ceRef.set(1);
     for (var i=1;i<14;i++){
       $('#checkbox'+i).enableCheckbox();
     };
@@ -285,11 +322,11 @@
         undoHeader = "Scene " + (currentScene-1);
         undoText = "Spillere: " + Object.keys(undoPlayers);
         undoPoints = "<p>Poeng: " + undoData['points'] + "</p>";
-      } else if (undoData.hasOwnProperty('eliminated')){  //last event was elimination
+      } else if (undoData.hasOwnProperty('players')){  //last event was elimination
         undoHeader = "Eliminasjonsrunde " + (currentRound-1);
         undoText = "Eliminerte: " + Object.keys(undoPlayers);
         undoPoints = "";
-      }else if (undoData.hasOwnProperty('pardoned')){     //last event was a pardon
+      }else{     //last event was a pardon
         undoHeader = "Eliminasjonsrunde " + (currentRound-1);
         undoText = "Alle videre - ingen Eliminerte";
         undoPoints = "";
@@ -365,10 +402,12 @@
   $("#btnSceneSubmit").on('click', e => {
 
     //Get a json of players and set .players
-    var curSceneRef = firebase.database().ref("shows/show/scenes/" + currentScene);
+    var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
     lastEventRef.remove();
     var sceneNavn = $('#sceneNavn').val();
     curSceneRef.child('/name').set(sceneNavn);
+    curSceneRef.child('/round').set(currentRound);
+    curSceneRef.child('/number').set(currentScene);
     //Get points and set .points
     var radios = $('[name="radio-poeng"]');
     var poeng = 0;
@@ -424,36 +463,53 @@
 
   $("#btnEditScene").on('click', e => {
     //make list dynamically
-    var ref = firebase.database().ref("shows/show/scenes");
+    var ref = firebase.database().ref("shows/show/events");
     var data = [];
     ref.once('value', snapshot => {
       var numScenes = snapshot.numChildren();
       var allItems = '';
-      for (var i=1, j=numScenes; i<= j; i++){
+      var nRound = true;
+      for (var i=1, j=numScenes; i <= j; i++){
         var scPts = snapshot.child(i).child('points').val();
         var scName = snapshot.child(i).child('name').val() || "Navn";
-        var scPlyrs = snapshot.child(i).child('players').val() || "0" ;
-        console.log(scPlyrs);
-        allItems += '<li data-icon="edit" data-rowid="' + i + '" ><a href="#"> <h1>Sc' + i + ': '+scName+' - '+scPts+'p </h1><p><strong>Spillere: '+Object.keys(scPlyrs)+'</strong></p></a></li>';
-      }
+        var scNumber = snapshot.child(i).child('number').val();
+        var scRound = snapshot.child(i).child('round').val();
+        var scPlyrs = snapshot.child(i).child('players');
+        var scPlyrNames = getNames(scPlyrs);
+        if (scNumber){
+          if(nRound == true){
+            allItems += '<li data-role="list-divider">Runde '+(scRound)+'</li>';
+            nRound = false;
+          }
+          if(scRound == currentRound){
+            allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
+          }else{
+            allItems += '<li data-rowid="'+i+'"><h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></li>';
+          }
+        }else if(scPlyrs.val()){
+          if(scRound == currentRound-1){
+            allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></a></li>';
+          }else{
+            allItems += '<li data-rowid="'+i+'" data-icon="edit"><h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></li>';
+            console.log(currentRound +"and"+ scRound);
+          }
+          nRound = true;
+        }else{
+          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li>';
+          nRound = true;
+        }
+      };
+
       $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
-    });
 
-
-
-    $("#scenelist").on("click", "li input", e => {
-      e.stopImmediatePropagation();
-      var rowid = $(this).parents("li").data("rowid");
-      var btnText = $(this).val();
-      console.log("You clicked the button: " + btnText + " on row number: " + rowid);
-    });
-
-    $("#scenelist").on("click", "li a", e => {
-      var rowid = $(this).parents("li").data("rowid");
-      console.log("You clicked the " +rowid+" listitem");
     });
     window.location = '#sceneEditPage';
   });
+
+   $("#scenelist").on("click", "li a", function(e){
+      var rowid = $(this).parents("li").data("rowid");
+      console.log(rowid);
+    });
 
   $("#btnSceneCancel").on('click', e => {
     window.location = '#showMenu';
@@ -461,6 +517,8 @@
 
   //Elimination page
   $("#btnEliminate").on('click', e => {
+    var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
+    curSceneRef.child('/round').set(currentRound);
     //Get players and set .players
     lastEventRef.remove();
     lastEventRef.child('eliminated').set(true);
@@ -471,6 +529,7 @@
       {
         playerListRef.child(cPlayr).remove();
         playerDataRef.child(i).child("active").remove();
+        curSceneRef.child('players/'+i).set(true);
         lastEventRef.child('players/'+i).set(true);
         $('#'+cCheck).disableCheckbox();
       };
@@ -496,8 +555,9 @@
   });
 
   $("#btnPardon").on('click', e => {
+    var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
+    curSceneRef.child('/round').set(currentRound);
     lastEventRef.remove();
-    lastEventRef.child('pardoned').set(true);
     playerListRef.once('value', function(snapshot){
       snapshot.forEach(function(playerSnapshot){
         var key = playerSnapshot.key;
@@ -535,13 +595,12 @@
         $('#checkbox'+key).enableCheckbox();
       }
       csRef.set(currentScene-1);                      //update counter and buttons
+      ceRef.set(currentEvent-1);
       $('#btnElimination').closest('.ui-btn').hide();
       $('#btnNewScene').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
-
-      lastEventRef.remove();
-    }else if(undoData.hasOwnProperty('eliminated')){  //last event was elimination round
+    }else if(undoData.hasOwnProperty('players')){  //last event was elimination round
       for(var key in undoPlayers){                    //de-eliminate players
         playerListRef.child(key).set(false);
         playerDataRef.child(key).child('active').set(false);
@@ -552,14 +611,15 @@
       $('#btnElimination').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
-      lastEventRef.remove();
-    }else if(undoData.hasOwnProperty('pardoned')){    //last event all players were pardoned
+    }else{    //last event all players were pardoned
       crRef.set(currentRound-1);                      //update counter and buttons
       $('#btnNewScene').closest('.ui-btn').hide();
       $('#btnElimination').closest('.ui-btn').show();
       $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
     }
+    lastEventRef.remove();
+    showEventsRef.child(currentEvent-1).remove();
     //buttonsUpdate();
   });
 
