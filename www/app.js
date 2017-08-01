@@ -213,6 +213,16 @@
   });
 
   //Name page
+  $('#namePage').on('pagecreate', e=>{
+    var nameFields = '';
+    for (var i=1; i<=13; i++){
+      nameFields += '<div class="dispInlineLabel" ><label for="player'+i+'">'+i+'.</label></div><div class="dispInline"><input type="text" maxlength="15" name="player'+i+'" id="player'+i+'" placeholder="Spiller '+i+'"></input></div><div class="clearFloats"></div>';
+    };
+    $("#inputFields").html(nameFields);
+    $("#inputFields").trigger("create");
+    console.log('prepenging');
+  });
+
   $("#playerInput").submit(e => {
     var $form = $(this);
     var data = [];
