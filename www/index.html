@@ -84,6 +84,7 @@
           </div> <!-- header -->
           <div data-role="main" class="ui-content">
               <form action="" id="playerInput">
+
                 <div id="inputFields"></div>
                 <button type="submit">Lagre</button>
                 <button id="btnNamesCancel">Avbryt</button>
@@ -146,7 +147,7 @@
           </div> <!-- header -->
           <div data-role="main" class="ui-content">
               <form action="" id="sceneInput">
-                <input type="text" maxlength="20" name="sceneNavn" id="sceneNavn" placeholder="Scenenavn">
+                <input type="text" data-clear-btn="true" maxlength="15" name="sceneNavn" id="sceneNavn" placeholder="Scenenavn"></input>
                 <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
                   <legend>Spillere:</legend>
                   <input type="checkbox" name="checkbox1" id="checkbox1" class="nummerTaster"></input>
@@ -206,8 +207,22 @@
           </div> <!-- footer -->
         </div> <!-- page -->
 
-
         <div data-role="page" id="sceneEditPage" >
+          <div data-role="header">
+            <h1 id=sceneHeader>Micetro Poeng</h1>
+          </div> <!-- header -->
+          <div data-role="main" class="ui-content">
+            <div id="sceneEdit">
+            </div>
+              <button id="btnSceneEditSubmit" class="btn btn-action ui-state-disabled">Send</button>
+              <button id="btnSceneEditCancel" class="btn btn-action">Avbryt</button>
+          </div> <!-- main -->
+          <div data-role="footer" id="footer">
+            Laget av Erik Hals
+          </div> <!-- footer -->
+        </div> <!-- page -->
+
+        <div data-role="page" id="sceneListPage" >
           <div data-role="header">
             <h1>Scener</h1>
           </div> <!-- header -->

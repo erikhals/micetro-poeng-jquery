@@ -66,13 +66,12 @@
   var playerData;
   const showEventsRef = firebase.database().ref("shows/show/events");
   var showEvents;
+  var showEventsSnap;
 
   var currentPlayers;
   var currentActive;
   var winner;
 
-  const lastEventRef = firebase.database().ref("shows/show/lastEvent");
-  var lastEvent;
   var last;
 
   var undoData;
@@ -141,17 +140,13 @@
     console.log("CurrentRound:" + currentRound);
   });
 
-  lastEventRef.on('value', lesnap =>{
-    lastEvent = lesnap.val();
-    console.log(lastEvent);
-  });
-
   showEventsRef.on('value', shsnap =>{
+    showEventsSnap = shsnap;
     showEvents = shsnap.val();
-    last = showEvents[showEvents.length -1];
-    console.log(last);
+    if(showEvents){
+      last = showEvents[showEvents.length -1];
+    }
     currentEvent = shsnap.numChildren()+1;
-    console.log(currentEvent);
   });
   playerDataRef.on('value', pdsnap => {
     playerData = pdsnap;
@@ -221,7 +216,7 @@
   $('#namePage').on('pagecreate', e=>{
     var nameFields = '';
     for (var i=1; i<=13; i++){
-      nameFields += '<div class="dispInlineLabel" ><label for="player'+i+'">'+i+'.</label></div><div class="dispInline"><input type="text" name="player'+i+'" id="player'+i+'" placeholder="Spiller '+i+'"></input></div><div class="clearFloats"></div>';
+      nameFields += '<div class="dispInlineLabel" ><label for="player'+i+'">'+i+'.</label></div><div class="dispInline"><input type="text" maxlength="15" name="player'+i+'" id="player'+i+'" placeholder="Spiller '+i+'"></input></div><div class="clearFloats"></div>';
     };
     $("#inputFields").html(nameFields);
     $("#inputFields").trigger("create");
@@ -257,6 +252,11 @@
     return false;
   });
 
+  $("#btnSceneEditCancel").on('click', e => {
+    parent.history.back();
+    return false;
+  });
+
   //Show menu
   $("#showMenu").on('pagebeforeshow', e => {
     $('#btnElimination').closest('.ui-btn').hide();
@@ -273,7 +273,7 @@
       });
       //Update buttons and header
       buttonsUpdate();
-      if(lastEvent){ //Undo function
+      if(showEvents){ //Undo function
         $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
       }
     });
@@ -313,9 +313,8 @@
     });
   });
 
-  $("#btnUndo").on('click', e => {
-    lastEventRef.once('value', snap => {                  //Get last event from database
-      undoData = snap.val();
+  $("#btnUndo").on('click', e => {              //Get last event from database
+      undoData = last;
       undoPlayers = {};
       undoPlayers = undoData['players'];
       if (undoData.hasOwnProperty('points')){             //last event was a scene
@@ -334,7 +333,6 @@
       $("#undoEvent").text(undoHeader);                   //prepare dialog
       $("#undoData").html("<p>" + undoText + "</p>" + undoPoints );
       $("#undoDialog").popup("open");                     //show dialog
-    });
   });
 
   $("#btnScores").on('click', e => {
@@ -403,7 +401,6 @@
 
     //Get a json of players and set .players
     var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
-    lastEventRef.remove();
     var sceneNavn = $('#sceneNavn').val();
     curSceneRef.child('/name').set(sceneNavn);
     curSceneRef.child('/round').set(currentRound);
@@ -417,20 +414,16 @@
     }
     pointRef = curSceneRef.child('/points');
     pointRef.set(+poeng);
-    //Set undo data
-    lastEventRef.child("points").set(+poeng);
     $('#btnUndo').closest('.ui-btn').removeAttr('disabled').removeClass('ui-state-disabled');
 
     //Get players and set .players
     var newPlayerRef = curSceneRef.child('/players');
-    var lastPlayerRef = lastEventRef.child('/players');
     for (var i=1;i<14;i++){
       var curPlayr = i;
       var curCheck = "checkbox"+i;
       if ($('#'+curCheck).is(":checked"))
       {
         newPlayerRef.child(curPlayr).set(true);
-        lastPlayerRef.child(curPlayr).set(true);
         playerDataRef.child(curPlayr).child('points').transaction(pScore => {
           return +pScore + +poeng;
         });
@@ -463,52 +456,77 @@
 
   $("#btnEditScene").on('click', e => {
     //make list dynamically
-    var ref = firebase.database().ref("shows/show/events");
     var data = [];
-    ref.once('value', snapshot => {
-      var numScenes = snapshot.numChildren();
-      var allItems = '';
-      var nRound = true;
-      for (var i=1, j=numScenes; i <= j; i++){
-        var scPts = snapshot.child(i).child('points').val();
-        var scName = snapshot.child(i).child('name').val() || "Navn";
-        var scNumber = snapshot.child(i).child('number').val();
-        var scRound = snapshot.child(i).child('round').val();
-        var scPlyrs = snapshot.child(i).child('players');
-        var scPlyrNames = getNames(scPlyrs);
-        if (scNumber){
-          if(nRound == true){
-            allItems += '<li data-role="list-divider">Runde '+(scRound)+'</li>';
-            nRound = false;
-          }
-          if(scRound == currentRound){
-            allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
-          }else{
-            allItems += '<li data-rowid="'+i+'"><h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></li>';
-          }
-        }else if(scPlyrs.val()){
-          if(scRound == currentRound-1){
-            allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></a></li>';
-          }else{
-            allItems += '<li data-rowid="'+i+'" data-icon="edit"><h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></li>';
-            console.log(currentRound +"and"+ scRound);
-          }
-          nRound = true;
-        }else{
-          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li>';
-          nRound = true;
+    var numScenes = showEventsSnap.numChildren();
+    var allItems = '';
+    var nRound = true;
+    for (var i=1, j=numScenes; i <= j; i++){
+      var showEvent = showEventsSnap.child(i);
+      var scPts = showEvent.child('points').val();
+      var scName = showEvent.child('name').val() || "Navn";
+      var scNumber = showEvent.child('number').val();
+      var scRound = showEvent.child('round').val();
+      var scPlyrs = showEvent.child('players');
+      var scPlyrNames = getNames(scPlyrs);
+      if (scNumber){
+        if(nRound == true){
+          allItems += '<li data-role="list-divider">Runde '+(scRound)+'</li>';
+          nRound = false;
         }
-      };
+        if(scRound == currentRound){
+          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
+        }else{
+          allItems += '<li data-rowid="'+i+'"><h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></li>';
+        }
+      }else if(scPlyrs.val()){
+        if(scRound == currentRound-1){
+          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></a></li>';
+        }else{
+          allItems += '<li data-rowid="'+i+'" data-icon="edit"><h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></li>';
+          console.log(currentRound +"and"+ scRound);
+        }
+        nRound = true;
+      }else{
+        allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li>';
+        nRound = true;
+      }
+    };
 
-      $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
+    $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
 
-    });
-    window.location = '#sceneEditPage';
+
+    window.location = '#sceneListPage';
   });
 
    $("#scenelist").on("click", "li a", function(e){
       var rowid = $(this).parents("li").data("rowid");
-      console.log(rowid);
+      var showEvent = showEventsSnap.child(rowid);
+      var scPts = showEvent.child('points').val();
+      var scName = showEvent.child('name').val();
+      var scNumber = showEvent.child('number').val();
+      var scRound = showEvent.child('round').val();
+      var scPlyrs = showEvent.child('players');
+      var editItems = "";
+      if(scNumber){
+        editItems += '<p>Scene '+scNumber+': '+scName+'</p><fieldset data-role="controlgroup" data-mini="true">'
+        playerList.forEach(snap =>{
+          name = playerData.child(snap.key).child("name").val();
+          editItems += '<label><input type="checkbox" name="scheckbox'+snap.key+'" id="scheckbox'+snap.key+'">'+snap.key+'. '+name+'</label>';
+        });
+        editItems += '</fieldset>'
+      }else if(scPlyrs.val()){
+
+      }else{
+
+      }
+      $('#sceneEdit').empty().append(editItems);
+      $(".ui-page").trigger( "create" );
+      scPlyrs.forEach(snap => {
+        checkbox = '#scheckbox'+snap.key;
+        $(checkbox).prop('checked', true).checkboxradio().checkboxradio('refresh');
+        console.log("done");
+      });
+      window.location = '#sceneEditPage';
     });
 
   $("#btnSceneCancel").on('click', e => {
@@ -520,8 +538,6 @@
     var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
     curSceneRef.child('/round').set(currentRound);
     //Get players and set .players
-    lastEventRef.remove();
-    lastEventRef.child('eliminated').set(true);
     for (var i=1;i<14;i++){
       var cPlayr = i;
       var cCheck = "checkbox"+i;
@@ -530,7 +546,6 @@
         playerListRef.child(cPlayr).remove();
         playerDataRef.child(i).child("active").remove();
         curSceneRef.child('players/'+i).set(true);
-        lastEventRef.child('players/'+i).set(true);
         $('#'+cCheck).disableCheckbox();
       };
     };
@@ -557,7 +572,6 @@
   $("#btnPardon").on('click', e => {
     var curSceneRef = firebase.database().ref("shows/show/events/" + currentEvent);
     curSceneRef.child('/round').set(currentRound);
-    lastEventRef.remove();
     playerListRef.once('value', function(snapshot){
       snapshot.forEach(function(playerSnapshot){
         var key = playerSnapshot.key;
@@ -598,7 +612,7 @@
       ceRef.set(currentEvent-1);
       $('#btnElimination').closest('.ui-btn').hide();
       $('#btnNewScene').closest('.ui-btn').show();
-      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+
       $("#showInfo").html("<h3>Runde "+currentRound+" - Scene "+currentScene+"</h3>");
     }else if(undoData.hasOwnProperty('players')){  //last event was elimination round
       for(var key in undoPlayers){                    //de-eliminate players
@@ -609,17 +623,17 @@
       crRef.set(currentRound-1);                      //update counter and buttons
       $('#btnNewScene').closest('.ui-btn').hide();
       $('#btnElimination').closest('.ui-btn').show();
-      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
     }else{    //last event all players were pardoned
       crRef.set(currentRound-1);                      //update counter and buttons
       $('#btnNewScene').closest('.ui-btn').hide();
       $('#btnElimination').closest('.ui-btn').show();
-      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
       $("#showInfo").html("<h3>Runde "+currentRound+" - Eliminasjon</h3>");
     }
-    lastEventRef.remove();
     showEventsRef.child(currentEvent-1).remove();
+    if(!showEvents){
+      $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
+    }
     //buttonsUpdate();
   });
 
@@ -628,12 +642,12 @@
     showRef.remove();           //delete show database
     for (var i=1;i<14;i++){     //update buttons
       $('#checkbox'+i).enableCheckbox();
-
     };
     $('#playerInput')[0].reset();
     $('#btnElimination').closest("ui-btn").hide();
     $('#btnNewScene').closest("ui-btn").show();
     $('#btnContinue').closest("ui-btn").hide();
+    $('#btnUndo').closest('.ui-btn').addClass('ui-state-disabled');
     window.location = '#mainMenu';
   });
 
