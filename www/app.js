@@ -509,36 +509,36 @@
     window.location = '#sceneListPage';
   });
 
-   $("#scenelist").on("click", "li a", function(e){
-      var rowid = $(this).parents("li").data("rowid");
-      var showEvent = showEventsSnap.child(rowid);
-      var scPts = showEvent.child('points').val();
-      var scName = showEvent.child('name').val();
-      var scNumber = showEvent.child('number').val();
-      var scRound = showEvent.child('round').val();
-      var scPlyrs = showEvent.child('players');
-      var editItems = "";
-      if(scNumber){
-        editItems += '<p>Scene '+scNumber+': '+scName+'</p><fieldset data-role="controlgroup" data-mini="true">'
-        playerList.forEach(snap =>{
-          name = playerData.child(snap.key).child("name").val();
-          editItems += '<label><input type="checkbox" name="scheckbox'+snap.key+'" id="scheckbox'+snap.key+'">'+snap.key+'. '+name+'</label>';
-        });
-        editItems += '</fieldset>'
-      }else if(scPlyrs.val()){
-
-      }else{
-
-      }
-      $('#sceneEdit').empty().append(editItems);
-      $(".ui-page").trigger( "create" );
-      scPlyrs.forEach(snap => {
-        checkbox = '#scheckbox'+snap.key;
-        $(checkbox).prop('checked', true).checkboxradio().checkboxradio('refresh');
-        console.log("done");
+ $("#scenelist").on("click", "li a", function(e){
+    var rowid = $(this).parents("li").data("rowid");
+    var showEvent = showEventsSnap.child(rowid);
+    var scPts = showEvent.child('points').val();
+    var scName = showEvent.child('name').val();
+    var scNumber = showEvent.child('number').val();
+    var scRound = showEvent.child('round').val();
+    var scPlyrs = showEvent.child('players');
+    var editItems = "";
+    if(scNumber){
+      editItems += '<p>Scene '+scNumber+': '+scName+'</p><fieldset data-role="controlgroup" data-mini="true">'
+      playerList.forEach(snap =>{
+        name = playerData.child(snap.key).child("name").val();
+        editItems += '<label><input type="checkbox" name="scheckbox'+snap.key+'" id="scheckbox'+snap.key+'">'+snap.key+'. '+name+'</label>';
       });
-      window.location = '#sceneEditPage';
+      editItems += '</fieldset>'
+    }else if(scPlyrs.val()){
+
+    }else{
+
+    }
+    $('#sceneEdit').empty().append(editItems);
+    $(".ui-page").trigger( "create" );
+    scPlyrs.forEach(snap => {
+      checkbox = '#scheckbox'+snap.key;
+      $(checkbox).prop('checked', true).checkboxradio().checkboxradio('refresh');
+      console.log("done");
     });
+    window.location = '#sceneEditPage';
+  });
 
   $("#btnSceneCancel").on('click', e => {
     window.location = '#showMenu';
