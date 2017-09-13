@@ -280,12 +280,29 @@
   });
 
   $("#btnNewScene").on('click', e => {
-    $('#sceneInput')[0].reset();    //reset forms and buttons
-    for(var i=1;i<=13;i++){
-      $('#checkbox'+i).checkboxradio().checkboxradio("refresh");
-    };
+    $("#sceneInput")[0].reset();
+    var feed = [];
+    playerDataRef.orderByKey().once('value', (snaps, error) => {
+      var allItems = '';
+      snaps.forEach(plSnap => {
+        const plyr = plSnap.val()
+        plyr['number'] = +plSnap.key;
+        if("active" in plyr){
+          feed.push(plyr);
+        }
+      });
+      feed.sort((a,b) => {
+        return parseFloat(a.number) - parseFloat(b.number);
+      });
+      fset = '<fieldset data-role="controlgroup" id="sceneplayerlist">'
+      for(var i=0, j=feed.length; i<j; i++){
+        allItems += '<input type="checkbox" name="checkbox'+feed[i].number+'" id="checkbox'+feed[i].number+'"><label for="checkbox'+feed[i].number+'">Spiller '+feed[i].number+' - '+feed[i].name+'</label>';
+      };
+      $("#sceneplayerlist").html(fset+allItems+'</fieldset>');
+      $("#sceneplayerlist").trigger("create");
     $('#btnSceneSubmit').closest('.ui-btn').addClass('ui-state-disabled');
     $('#sceneHeader').html("Scene " + currentScene);
+    });
     window.location = '#scenePage';
   });
 
@@ -372,12 +389,6 @@
   //Scene page
   $("#scenePage").on('create', e => {
     playerDataRef.once("value").then(snapshot => {
-      //Enable button 13 if player 13 has a name
-      if(snapshot.child("13").child("name").val() == null){
-        $("#knapp13").hide();
-      }else{
-        $("#knapp13").show();
-      }
       for (i=1; i<14; i++) {      //disable all checkboxes to initialise
         $('#checkbox'+i).disableCheckbox();
       };

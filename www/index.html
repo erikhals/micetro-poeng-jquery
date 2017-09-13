@@ -140,67 +140,33 @@
           </div>
         </div> <!-- page -->
 
-
         <div data-role="page" id="scenePage" >
           <div data-role="header">
             <h1 id=sceneHeader>Micetro Poeng</h1>
           </div> <!-- header -->
           <div data-role="main" class="ui-content">
-              <form action="" id="sceneInput">
-                <input type="text" data-clear-btn="true" maxlength="15" name="sceneNavn" id="sceneNavn" placeholder="Scenenavn"></input>
-                <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
-                  <legend>Spillere:</legend>
-                  <input type="checkbox" name="checkbox1" id="checkbox1" class="nummerTaster"></input>
-                  <label for="checkbox1">1</label>
-                  <input type="checkbox" name="checkbox2" id="checkbox2" class="nummerTaster"></input>
-                  <label for="checkbox2">2</label>
-                  <input type="checkbox" name="checkbox3" id="checkbox3" class="nummerTaster"></input>
-                  <label for="checkbox3">3</label>
-                </fieldset>
-                <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
-                  <input type="checkbox" name="checkbox4" id="checkbox4" class="nummerTaster"></input>
-                  <label for="checkbox4">4</label>
-                  <input type="checkbox" name="checkbox5" id="checkbox5" class="nummerTaster"></input>
-                  <label for="checkbox5">5</label>
-                  <input type="checkbox" name="checkbox6" id="checkbox6" class="nummerTaster"></input>
-                  <label for="checkbox6">6</label>
-                </fieldset>
-                <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
-                  <input type="checkbox" name="checkbox7" id="checkbox7" class="nummerTaster"></input>
-                  <label for="checkbox7">7</label>
-                  <input type="checkbox" name="checkbox8" id="checkbox8" class="nummerTaster"></input>
-                  <label for="checkbox8">8</label>
-                  <input type="checkbox" name="checkbox9" id="checkbox9" class="nummerTaster"></input>
-                  <label for="checkbox9">9</label>
-                </fieldset>
-                <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
-                  <input type="checkbox" name="checkbox10" id="checkbox10" class="nummerTaster"></input>
-                  <label for="checkbox10">10</label>
-                  <input type="checkbox" name="checkbox11" id="checkbox11" class="nummerTaster"></input>
-                  <label for="checkbox11">11</label>
-                  <input type="checkbox" name="checkbox12" id="checkbox12" class="nummerTaster"></input>
-                  <label for="checkbox12">12</label>
-                </fieldset>
-                <fieldset id="knapp13" data-role='controlgroup' data-type='horizontal' class="nummerTaster">
-                  <input type="checkbox" name="checkbox13" id="checkbox13"></input>
-                  <label for="checkbox13">13</label>
-                </fieldset>
-                <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
-                  <legend>Poeng:</legend>
-                  <input type="radio" name="radio-poeng" id="radio-a" value=1 class="nummerTaster radioKnapp"></input>
-                  <label for="radio-a">1</label>
-                  <input type="radio" name="radio-poeng" id="radio-b" value=2 class="nummerTaster radioKnapp"></input>
-                  <label for="radio-b">2</label>
-                  <input type="radio" name="radio-poeng" id="radio-c" value=3 class="nummerTaster radioKnapp"></input>
-                  <label for="radio-c">3</label>
-                  <input type="radio" name="radio-poeng" id="radio-d" value=4 class="nummerTaster radioKnapp"></input>
-                  <label for="radio-d">4</label>
-                  <input type="radio" name="radio-poeng" id="radio-e" value=5 class="nummerTaster radioKnapp"></input>
-                  <label for="radio-e">5</label>
-                </fieldset>
-              </form>
-              <button id="btnSceneSubmit" class="btn btn-action ui-state-disabled">Send</button>
-              <button id="btnSceneCancel" class="btn btn-action">Avbryt</button>
+            <form action="" id="sceneInput">
+              <input type="text" data-clear-btn="true" maxlength="15" name="sceneNavn" id="sceneNavn" placeholder="Scenenavn"></input>
+              <fieldset data-role="controlgroup" id="sceneplayerlist">
+              </fieldset>
+              <fieldset data-role="controlgroup" data-type="horizontal" class="nummerTaster">
+                <legend>Poeng:</legend>
+                <input type="radio" name="radio-poeng" id="radio-a" value=1 class="nummerTaster radioKnapp"></input>
+                <label for="radio-a">1</label>
+                <input type="radio" name="radio-poeng" id="radio-b" value=2 class="nummerTaster radioKnapp"></input>
+                <label for="radio-b">2</label>
+                <input type="radio" name="radio-poeng" id="radio-c" value=3 class="nummerTaster radioKnapp"></input>
+                <label for="radio-c">3</label>
+                <input type="radio" name="radio-poeng" id="radio-d" value=4 class="nummerTaster radioKnapp"></input>
+                <label for="radio-d">4</label>
+                <input type="radio" name="radio-poeng" id="radio-e" value=5 class="nummerTaster radioKnapp"></input>
+                <label for="radio-e">5</label>
+              </fieldset>
+            </form>
+            <!-- <div class="ui-bar">
+            </div> -->
+            <button id="btnSceneSubmit" class="btn btn-action ui-state-disabled">Send</button>
+            <button id="btnSceneCancel" class="btn btn-action">Avbryt</button>
           </div> <!-- main -->
           <div data-role="footer" id="footer">
             Laget av Erik Hals
