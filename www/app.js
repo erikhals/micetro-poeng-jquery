@@ -67,7 +67,7 @@
   const showEventsRef = firebase.database().ref("shows/show/events");
   var showEvents;
   var showEventsSnap;
-
+  var showEventEdit;
   var currentPlayers;
   var currentActive;
   var winner;
@@ -130,6 +130,47 @@
     return output;
   }
 
+  //update Edit Scene list
+  function updateSceneList(){
+    var data = [];
+    var numScenes = showEventsSnap.numChildren();
+    var allItems = '';
+    var nRound = true;
+    for (var i=1, j=numScenes; i <= j; i++){
+      var showEvent = showEventsSnap.child(i);
+      var scPts = showEvent.child('points').val();
+      var scName = showEvent.child('name').val() || "Navn";
+      var scNumber = showEvent.child('number').val();
+      var scRound = showEvent.child('round').val();
+      var scPlyrs = showEvent.child('players');
+      var scPlyrNames = getNames(scPlyrs);
+      if (scNumber){
+        if(nRound == true){
+          allItems += '<li data-role="list-divider">Runde '+(scRound)+'</li>';
+          nRound = false;
+        }
+        allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
+      }else if(scPlyrs.val()){
+        allItems += '<li data-rowid="'+i+'" data-icon="edit"><h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></li>';
+        nRound = true;
+      }else{
+        allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li>';
+        nRound = true;
+      }
+    };
+    $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
+  }
+
+  function updatePlayerPoints(){
+    playerData.forEach(snap => {
+      var curPlayr = snap.key;
+      //console.log(curPlayr);
+      // showEventsSnap.forEach( ssnap =>{
+      //
+      // })
+    });
+  }
+
   // Set Global Variables
   csRef.on('value', csnap => {
     currentScene = csnap.val();
@@ -149,7 +190,11 @@
     currentEvent = shsnap.numChildren()+1;
   });
   playerDataRef.on('value', pdsnap => {
-    playerData = pdsnap;
+    playerData = pdsnap.val();
+    showEventsSnap.forEach( ssnap =>{
+      sEvent=ssnap.val();
+      console.log(sEvent.players);
+    })
   });
 
   playerListRef.on('value', psnap => {
@@ -461,83 +506,41 @@
         }
       }
     });
-
     csRef.set(currentScene+1);
   });
 
   $("#btnEditScene").on('click', e => {
     //make list dynamically
-    var data = [];
-    var numScenes = showEventsSnap.numChildren();
-    var allItems = '';
-    var nRound = true;
-    for (var i=1, j=numScenes; i <= j; i++){
-      var showEvent = showEventsSnap.child(i);
-      var scPts = showEvent.child('points').val();
-      var scName = showEvent.child('name').val() || "Navn";
-      var scNumber = showEvent.child('number').val();
-      var scRound = showEvent.child('round').val();
-      var scPlyrs = showEvent.child('players');
-      var scPlyrNames = getNames(scPlyrs);
-      if (scNumber){
-        if(nRound == true){
-          allItems += '<li data-role="list-divider">Runde '+(scRound)+'</li>';
-          nRound = false;
-        }
-        if(scRound == currentRound){
-          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></a></li>';
-        }else{
-          allItems += '<li data-rowid="'+i+'"><h1>Sc' + scNumber + ': '+scName+' <p class="ui-li-aside"><strong>'+scPts+'</strong> poeng</p></h1><p><strong>Spillere: '+scPlyrNames+'</strong></p></li>';
-        }
-      }else if(scPlyrs.val()){
-        if(scRound == currentRound-1){
-          allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></a></li>';
-        }else{
-          allItems += '<li data-rowid="'+i+'" data-icon="edit"><h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Eliminert: '+scPlyrNames+'</strong></p></li>';
-          console.log(currentRound +"and"+ scRound);
-        }
-        nRound = true;
-      }else{
-        allItems += '<li data-rowid="'+i+'" data-icon="edit"><a href="#" id="event' + i + '"> <h1>Eliminasjonsrunde ' + scRound + ' </h1><p><strong>Alle videre</strong></p></a></li>';
-        nRound = true;
-      }
-    };
-
-    $("#scenelist").empty().append(allItems).listview().listview("refresh").enhanceWithin();
-
-
+    updateSceneList();
     window.location = '#sceneListPage';
   });
 
  $("#scenelist").on("click", "li a", function(e){
     var rowid = $(this).parents("li").data("rowid");
     var showEvent = showEventsSnap.child(rowid);
+    currentEventEdit = showEvent.key;
     var scPts = showEvent.child('points').val();
     var scName = showEvent.child('name').val();
     var scNumber = showEvent.child('number').val();
     var scRound = showEvent.child('round').val();
     var scPlyrs = showEvent.child('players');
-    var editItems = "";
-    if(scNumber){
-      editItems += '<p>Scene '+scNumber+': '+scName+'</p><fieldset data-role="controlgroup" data-mini="true">'
-      playerList.forEach(snap =>{
-        name = playerData.child(snap.key).child("name").val();
-        editItems += '<label><input type="checkbox" name="scheckbox'+snap.key+'" id="scheckbox'+snap.key+'">'+snap.key+'. '+name+'</label>';
-      });
-      editItems += '</fieldset>'
-    }else if(scPlyrs.val()){
-
+    var editItems = '<h4>Scene '+scNumber+': '+scName+'</h4>';
+    if(scName){
+      editItems += '<input type="text" maxlength="15" name="sceneNavnEdit" id="sceneNavnEdit" placeholder="'+scName+'"/>'
     }else{
-
+      editItems += '<input type="text" maxlength="15" name="sceneNavnEdit" id="sceneNavnEdit" placeholder="Navn"/>'
     }
     $('#sceneEdit').empty().append(editItems);
     $(".ui-page").trigger( "create" );
-    scPlyrs.forEach(snap => {
-      checkbox = '#scheckbox'+snap.key;
-      $(checkbox).prop('checked', true).checkboxradio().checkboxradio('refresh');
-      console.log("done");
-    });
     window.location = '#sceneEditPage';
+  });
+
+  $("#btnSceneEditSubmit").on('click', e =>{
+    var sceneNavn = $('#sceneNavnEdit').val();
+    var curSceneRef = firebase.database().ref("shows/show/events/" + currentEventEdit);
+    curSceneRef.child('/name').set(sceneNavn);
+    updateSceneList();
+    window.location = '#sceneListPage';
   });
 
   $("#btnSceneCancel").on('click', e => {
